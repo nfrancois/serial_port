@@ -38,6 +38,31 @@ Dart_Handle HandleError(Dart_Handle handle) {
   return handle;
 }
 
+speed_t toBaudrate(int speed){
+        switch(speed){
+            case 50: return B50;
+            case 75: return B75;
+            case 110: return B110;
+            case 134: return B134;
+            case 150: return B150;
+            case 200: return B200;
+            case 300: return B300;
+            case 600: return B600;
+            case 1200: return B1200;
+            case 1800: return B1800;
+            case 2400: return B2400;
+            case 4800: return B4800;
+            case 9600: return B9600;
+            case 19200: return B19200;
+            case 38400: return B38400;
+            case 57600: return B57600;
+            case 115200: return B115200;
+            case 230400: return B230400;
+        }
+        throw "Unknown baudrate";
+}
+
+
 void SystemOpen(Dart_NativeArguments arguments) {
   Dart_EnterScope();
 
@@ -45,7 +70,9 @@ void SystemOpen(Dart_NativeArguments arguments) {
 
   tcgetattr(STDOUT_FILENO,&old_stdio);
 
+  // TODO values from method
   const char *portname = "/dev/tty.usbmodemfd131";
+  speed_t baudrate = toBaudrate(9600);
 
   memset(&stdio,0,sizeof(stdio));
   stdio.c_iflag=0;
@@ -68,6 +95,12 @@ void SystemOpen(Dart_NativeArguments arguments) {
 
   tty_fd=open(portname, O_RDWR | O_NONBLOCK); 
   bool success = (tty_fd != -1);
+  if(success){
+    cfsetospeed(&tio, baudrate);
+    cfsetispeed(&tio, baudrate);
+ 
+    tcsetattr(tty_fd,TCSANOW,&tio);
+  }
 
   // END
   Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(success)));
@@ -97,6 +130,7 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {
   Dart_ExitScope();
   return result;
 }
+
 
 /*
 
