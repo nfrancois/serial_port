@@ -1,0 +1,6 @@
+*.o
+*.dll
+*.so
+*.dylib
+packages
+pubspec.lock
