@@ -14,30 +14,6 @@ struct termios stdio;
 struct termios old_stdio;
 int tty_fd;
 
-/*
-Called the first time a native function with a given name is called,
- to resolve the Dart name of the native function into a C function pointer.
-*/
-Dart_NativeFunction ResolveName(Dart_Handle name, int argc);
-
-/*
-Called when the extension is loaded.
-*/
-DART_EXPORT Dart_Handle serial_port_Init(Dart_Handle parent_library) {
-  if (Dart_IsError(parent_library)) { return parent_library; }
-
-  Dart_Handle result_code = Dart_SetNativeResolver(parent_library, ResolveName);
-  if (Dart_IsError(result_code)) return result_code;
-
-
-  return Dart_Null();
-}
-
-Dart_Handle HandleError(Dart_Handle handle) {
-  if (Dart_IsError(handle)) Dart_PropagateError(handle);
-  return handle;
-}
-
 speed_t toBaudrate(int speed){
         switch(speed){
             case 50: return B50;
@@ -62,12 +38,7 @@ speed_t toBaudrate(int speed){
         throw "Unknown baudrate";
 }
 
-
-void SystemOpen(Dart_NativeArguments arguments) {
-  Dart_EnterScope();
-
-  // START opening
-
+bool open(){
   tcgetattr(STDOUT_FILENO,&old_stdio);
 
   // TODO values from method
@@ -101,8 +72,43 @@ void SystemOpen(Dart_NativeArguments arguments) {
  
     tcsetattr(tty_fd,TCSANOW,&tio);
   }
+  return success;
+}
 
-  // END
+void close(){
+  close(tty_fd);
+  tcsetattr(STDOUT_FILENO,TCSANOW,&old_stdio);
+}
+
+/*
+Called the first time a native function with a given name is called,
+ to resolve the Dart name of the native function into a C function pointer.
+*/
+Dart_NativeFunction ResolveName(Dart_Handle name, int argc);
+
+/*
+Called when the extension is loaded.
+*/
+DART_EXPORT Dart_Handle serial_port_Init(Dart_Handle parent_library) {
+  if (Dart_IsError(parent_library)) { return parent_library; }
+
+  Dart_Handle result_code = Dart_SetNativeResolver(parent_library, ResolveName);
+  if (Dart_IsError(result_code)) return result_code;
+
+
+  return Dart_Null();
+}
+
+Dart_Handle HandleError(Dart_Handle handle) {
+  if (Dart_IsError(handle)) Dart_PropagateError(handle);
+  return handle;
+}
+
+void SystemOpen(Dart_NativeArguments arguments) {
+  Dart_EnterScope();
+
+  bool success = open();
+
   Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(success)));
   Dart_ExitScope();
 }
@@ -110,8 +116,7 @@ void SystemOpen(Dart_NativeArguments arguments) {
 void SystemClose(Dart_NativeArguments arguments){
   Dart_EnterScope();
 
-  close(tty_fd);
-  tcsetattr(STDOUT_FILENO,TCSANOW,&old_stdio);
+  close();
 
   Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(true)));
   Dart_ExitScope();
