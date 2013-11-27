@@ -2,7 +2,7 @@ library test_serial_port;
 
 import 'package:unittest/unittest.dart';
 import 'package:unittest/matcher.dart' as m;
-import 'serial_port.dart';
+import '../lib/serial_port.dart';
 import 'dart:io';
 
 // TODO : test with unnitest

@@ -1,4 +1,4 @@
-all: clean build test
+all: clean build run_test
 
 clean:
 	rm -rf libserial_port.*	
@@ -6,5 +6,5 @@ clean:
 build:
 	dart build.dart
 
-test:
-	dart test_serial_port.dart 
+run_test:
+	dart test/test_serial_port.dart 

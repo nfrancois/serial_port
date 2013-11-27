@@ -11,7 +11,7 @@ void main(List<String> args) {
 class Program {
   static void main(List<String> args) {
     var basePath = Directory.current.path;
-    var projectPath = toAbsolutePath('serial_port.yaml', basePath);
+    var projectPath = toAbsolutePath('lib/serial_port.yaml', basePath);
     var result = Program.buildProject(projectPath, {
       'start': 'Building project "$projectPath"',
       'success': 'Building complete successfully',
