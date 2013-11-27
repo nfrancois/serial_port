@@ -3,3 +3,5 @@ version: 0.0.1-dev
 description: Dart extension library to communicate on serial port.
 dependencies:
   ccompile: any
+dev_dependencies:
+  unittest: any
