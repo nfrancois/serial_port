@@ -1,8 +1,7 @@
 library test_serial_port;
 
 import 'package:unittest/unittest.dart';
-import 'package:unittest/matcher.dart' as m;
-import '../lib/serial_port.dart';
+import 'package:serial_port/serial_port.dart';
 import 'dart:io';
 
 // TODO : test with unnitest
@@ -21,11 +20,16 @@ void main() {
     tearDown(() => dummySerialPort.deleteSync());
     
     test('Just open and close', () {
-	  var successOpen = open(dummySerialPort.path, 9600);
-	  expect(successOpen, isTrue);
-	  var successClose = close();
-	  expect(successClose, isTrue);
-	});
+	    var successOpen = open(dummySerialPort.path, 9600);
+	    expect(successOpen, isTrue);
+	    var successClose = close();
+	    expect(successClose, isTrue);
+	  });
+
+    test('Fail with unkwnon portname', (){
+      var successOpen = open('Does not exist', 9600);
+      expect(successOpen, isFalse);
+    });
   });
 
 }
