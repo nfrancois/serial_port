@@ -4,3 +4,4 @@
 *.dylib
 packages
 pubspec.lock
+*.tmp
