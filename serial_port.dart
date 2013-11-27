@@ -5,14 +5,14 @@ import 'dart:isolate';
 import 'dart-ext:serial_port';
 
 // TODO inspiration WebSocket
-class SerialPort {
+//class SerialPort {
 
-	static SendPort _port;
+	//static SendPort _port;
 	
-	final String device;
-	final int baudrate;
+	//final String device;
+	//final int baudrate;
 
-	SerialPort(this.device, this.baudrate);
+	//SerialPort(this.device, this.baudrate);
 
 	// TODO private
 	bool open() native "SystemOpen";
@@ -39,4 +39,4 @@ class SerialPort {
 
 	SendPort _newServicePort() native "SerialPort_ServicePort";
 	*/
-}
+//}
