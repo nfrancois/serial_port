@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart-ext:serial_port';
 
+
 // TODO inspiration WebSocket
 //class SerialPort {
 
@@ -15,7 +16,7 @@ import 'dart-ext:serial_port';
 	//SerialPort(this.device, this.baudrate);
 
 	// TODO private
-	bool open() native "SystemOpen";
+	bool open(String portname, int baudrateSpeed) native "SystemOpen";
 
 	bool close() native "SystemClose";
 

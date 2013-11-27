@@ -37,7 +37,7 @@ speed_t toBaudrate(int speed){
 
 bool open_serial_port(const char *portname, int baudrate_speed){
   if(tty_fd != 0){
-    throw "Cannot open new serial port";
+    //throw "Cannot open new serial port";
   }
   //tcgetattr(STDOUT_FILENO,&old_stdio);
 
@@ -93,10 +93,17 @@ Dart_Handle HandleError(Dart_Handle handle) {
 
 void SystemOpen(Dart_NativeArguments arguments) {
   Dart_EnterScope();
+  Dart_Handle portname_object = HandleError(Dart_GetNativeArgument(arguments, 0));
+  Dart_Handle baudrate_speed_object = HandleError(Dart_GetNativeArgument(arguments, 1));
+
+  // TODO exception with Dart_ThrowException
+  //if (!Dart_IsString(portname_object)) return NULL;
+  //if (!Dart_IsInteger(baudrate_speed_object)) return NULL;
+  const char* portname;
+  int64_t baudrate_speed;
+  HandleError(Dart_StringToCString(portname_object, &portname));
+  HandleError(Dart_IntegerToInt64(baudrate_speed_object, &baudrate_speed));
   
-  // TODO args from params 
-  const char *portname = "/dev/tty.usbmodemfd131";
-  int baudrate_speed = 9600;
   bool success = open_serial_port(portname, baudrate_speed);
 
   Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(success)));
