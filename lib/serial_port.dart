@@ -5,39 +5,23 @@ import 'dart:isolate';
 import 'dart-ext:serial_port';
 
 
-// TODO inspiration WebSocket
-//class SerialPort {
+class SerialPort {
 
-	//static SendPort _port;
-	
-	//final String device;
-	//final int baudrate;
+  final String portname;
+  final int baudrate;
 
-	//SerialPort(this.device, this.baudrate);
+  int _ttyFd;
 
-	// TODO private
-	bool open(String portname, int baudrateSpeed) native "nativeClose";
+  SerialPort(this.portname, this.baudrate){
+    _ttyFd = _open(portname, baudrate);	
+  }
 
-	bool close() native "nativeClose";
+  void close(){
+    _close(_ttyFd);
+  }
 
+}
 
-	//Future<bool open();
+int	_open(String portname, int baudrateSpeed) native "nativeOpen";
 
-	//Future<bool close();
-
-	//Stream onOpen();
-	//Stream onClose();
-	/*
-
-	Stream<String> onData();
-
-	SendPort get _servicePort {
-    	if (_port == null) {
-      	_port = _newServicePort();
-    	}
-    	return _port;
-  	}
-
-	SendPort _newServicePort() native "SerialPort_ServicePort";
-	*/
-//}
+bool _close(int ttyFd) native "nativeClose";

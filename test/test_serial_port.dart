@@ -20,15 +20,12 @@ void main() {
     tearDown(() => dummySerialPort.deleteSync());
     
     test('Just open and close', () {
-	    var successOpen = open(dummySerialPort.path, 9600);
-	    expect(successOpen, isTrue);
-	    var successClose = close();
-	    expect(successClose, isTrue);
+      new SerialPort(dummySerialPort.path, 9600)..close();   
 	  });
 
     test('Fail with unkwnon portname', (){
       try {
-        open("notExist", 9600);  
+        new SerialPort("notExist", 9600);  
       } catch(e){
         expect(e, isException);
         expect(e.message, "Impossible to read portname=notExist");   
@@ -37,7 +34,7 @@ void main() {
 
    test('Fail with unkwnon baudrate', (){
       try {
-        open(dummySerialPort.path, 1);
+        new SerialPort(dummySerialPort.path, 1);
       } catch(e){
         expect(e, isArgumentError);
         expect(e.message, "Unknown baudrate speed=1");   

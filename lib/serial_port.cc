@@ -9,34 +9,6 @@
 #include <termios.h>
 #include "dart_api.h"
 
-struct termios tio;
-int tty_fd = 0;
-
-speed_t toBaudrate(int speed){
-  switch(speed){
-    case 50: return B50;
-    case 75: return B75;
-    case 110: return B110;
-    case 134: return B134;
-    case 150: return B150;
-    case 200: return B200;
-    case 300: return B300;
-    case 600: return B600;
-    case 1200: return B1200;
-    case 1800: return B1800;
-    case 2400: return B2400;
-    case 4800: return B4800;
-    case 9600: return B9600;
-    case 19200: return B19200;
-    case 38400: return B38400;
-    case 57600: return B57600;
-    case 115200: return B115200;
-    case 230400: return B230400;
-  }
-  std::stringstream ss;
-  ss << "Unknown baudrate speed=" << speed;
-  throw ss.str().c_str();
-}
 
 Dart_Handle NewDartExceptionWithMessage(const char* library_url,
                                         const char* exception_name,
@@ -61,14 +33,39 @@ void nativeOpen(Dart_NativeArguments arguments) {
   int64_t baudrate_speed;
   HandleError(Dart_StringToCString(portname_object, &portname));
   HandleError(Dart_IntegerToInt64(baudrate_speed_object, &baudrate_speed));
+  
   speed_t baudrate;
-  try {
-    baudrate = toBaudrate(baudrate_speed);
-  } catch (const char* e){
-    Dart_Handle error = NewDartExceptionWithMessage("dart:core", "ArgumentError", e);
-    if (Dart_IsError(error)) Dart_PropagateError(error);
-    Dart_ThrowException(error);
+
+  switch(baudrate_speed){
+    case 50: baudrate = B50; break;
+    case 75: baudrate = B75; break;
+    case 110: baudrate = B110; break;
+    case 134: baudrate = B134; break;
+    case 150: baudrate = B150; break;
+    case 200: baudrate = B200; break;
+    case 300: baudrate = B300; break;
+    case 600: baudrate = B600; break;
+    case 1200: baudrate = B1200; break;
+    case 1800: baudrate = B1800; break;
+    case 2400: baudrate = B2400; break;
+    case 4800: baudrate = B4800; break;
+    case 9600: baudrate = B9600; break;
+    case 19200: baudrate = B19200; break;
+    case 38400: baudrate = B38400; break;
+    case 57600: baudrate = B57600; break;
+    case 115200: baudrate = B115200; break;
+    case 230400: baudrate = B230400; break;
+    default:
+      std::stringstream ss;
+      ss << "Unknown baudrate speed=" << baudrate_speed;
+      Dart_Handle error = NewDartExceptionWithMessage("dart:core", "ArgumentError", ss.str().c_str());
+      if (Dart_IsError(error)) Dart_PropagateError(error);
+      Dart_ThrowException(error);  
+      // Prevent warning : uninitialized value
+      baudrate = B9600;    
   }
+ 
+  struct termios tio;
   memset(&tio, 0, sizeof(tio));
   tio.c_iflag=0;
   tio.c_oflag=0;
@@ -77,8 +74,8 @@ void nativeOpen(Dart_NativeArguments arguments) {
   tio.c_cc[VMIN]=1;
   tio.c_cc[VTIME]=5;
 
-  tty_fd = open(portname, O_RDWR | O_NONBLOCK); 
-  if(tty_fd == -1){
+  int tty_fd = open(portname, O_RDWR | O_NONBLOCK); 
+  if(tty_fd < 0){
     std::stringstream ss;
     ss << "Impossible to read portname=" << portname;    
     Dart_Handle error = NewDartExceptionWithMessage("dart:io", "FileSystemException", ss.str().c_str());
@@ -90,17 +87,17 @@ void nativeOpen(Dart_NativeArguments arguments) {
   cfsetispeed(&tio, baudrate);
   tcsetattr(tty_fd, TCSANOW, &tio);
    
-  Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(true)));
+  Dart_SetReturnValue(arguments, HandleError(Dart_NewInteger(tty_fd)));
   Dart_ExitScope();
 }
 
 void nativeClose(Dart_NativeArguments arguments){
-  Dart_EnterScope();
+  int64_t tty_fd;
+
+  Dart_Handle tty_fd_object = HandleError(Dart_GetNativeArgument(arguments, 0));
+  HandleError(Dart_IntegerToInt64(tty_fd_object, &tty_fd));
 
   close(tty_fd);
-
-  Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(true)));
-  Dart_ExitScope();
 }
 
 DART_EXPORT Dart_Handle serial_port_Init(Dart_Handle parent_library) {
@@ -121,7 +118,7 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {
   const char* cname;
   HandleError(Dart_StringToCString(name, &cname));
 
-  if (strcmp("nativeClose", cname) == 0) result = nativeClose;
+  if (strcmp("nativeOpen", cname) == 0) result = nativeOpen;
   if (strcmp("nativeClose", cname) == 0) result = nativeClose;
 
   Dart_ExitScope();
@@ -156,113 +153,3 @@ Dart_Handle NewDartExceptionWithMessage(const char* library_url,
   }
 
 }
-
-/*
-
-void SystemSrand(Dart_NativeArguments arguments) {
-  Dart_EnterScope();
-  bool success = false;
-  Dart_Handle seed_object = HandleError(Dart_GetNativeArgument(arguments, 0));
-  if (Dart_IsInteger(seed_object)) {
-    bool fits;
-    HandleError(Dart_IntegerFitsIntoInt64(seed_object, &fits));
-    if (fits) {
-      int64_t seed;
-      HandleError(Dart_IntegerToInt64(seed_object, &seed));
-      srand(static_cast<unsigned>(seed));
-      success = true;
-    }
-  }
-  Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(success)));
-  Dart_ExitScope();
-}
-
-uint8_t* randomArray(int seed, int length) {
-  if (length <= 0 || length > 10000000) return NULL;
-  uint8_t* values = reinterpret_cast<uint8_t*>(malloc(length));
-  if (NULL == values) return NULL;
-  srand(seed);
-  for (int i = 0; i < length; ++i) {
-    values[i] = rand() % 256;
-  }
-  return values;
-}
-
-void wrappedRandomArray(Dart_Port dest_port_id,
-                        Dart_CObject* message) {
-  Dart_Port reply_port_id = ILLEGAL_PORT;
-  if (message->type == Dart_CObject_kArray &&
-      3 == message->value.as_array.length) {
-    // Use .as_array and .as_int32 to access the data in the Dart_CObject.
-    Dart_CObject* param0 = message->value.as_array.values[0];
-    Dart_CObject* param1 = message->value.as_array.values[1];
-    Dart_CObject* param2 = message->value.as_array.values[2];
-    if (param0->type == Dart_CObject_kInt32 &&
-        param1->type == Dart_CObject_kInt32 &&
-        param2->type == Dart_CObject_kSendPort) {
-      int seed = param0->value.as_int32;
-      int length = param1->value.as_int32;
-      reply_port_id = param2->value.as_send_port;
-      uint8_t* values = randomArray(seed, length);
-
-      if (values != NULL) {
-        Dart_CObject result;
-        result.type = Dart_CObject_kTypedData;
-        result.value.as_typed_data.type = Dart_TypedData_kUint8;
-        result.value.as_typed_data.values = values;
-        result.value.as_typed_data.length = length;
-        Dart_PostCObject(reply_port_id, &result);
-        free(values);
-        // It is OK that result is destroyed when function exits.
-        // Dart_PostCObject has copied its data.
-        return;
-      }
-    }
-  }
-  Dart_CObject result;
-  result.type = Dart_CObject_kNull;
-  Dart_PostCObject(reply_port_id, &result);
-}
-
-void randomArrayServicePort(Dart_NativeArguments arguments) {
-  Dart_EnterScope();
-  Dart_SetReturnValue(arguments, Dart_Null());
-  Dart_Port service_port =
-      Dart_NewNativePort("RandomArrayService", wrappedRandomArray, true);
-  if (service_port != ILLEGAL_PORT) {
-    Dart_Handle send_port = HandleError(Dart_NewSendPort(service_port));
-    Dart_SetReturnValue(arguments, send_port);
-  }
-  Dart_ExitScope();
-}
-
-
-struct FunctionLookup {
-  const char* name;
-  Dart_NativeFunction function;
-};
-
-FunctionLookup function_list[] = {
-    {"SystemRand", SystemRand},
-    {"SystemSrand", SystemSrand},
-    {"RandomArray_ServicePort", randomArrayServicePort},
-    {NULL, NULL}};
-
-Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {
-  if (!Dart_IsString(name)) return NULL;
-  Dart_NativeFunction result = NULL;
-  Dart_EnterScope();
-  const char* cname;
-  HandleError(Dart_StringToCString(name, &cname));
-
-  for (int i=0; function_list[i].name != NULL; ++i) {
-    if (strcmp(function_list[i].name, cname) == 0) {
-      result = function_list[i].function;
-      break;
-    }
-  }
-  Dart_ExitScope();
-  return result;
-}
-}
-*/
