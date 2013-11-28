@@ -41,61 +41,15 @@ speed_t toBaudrate(int speed){
 Dart_Handle NewDartExceptionWithMessage(const char* library_url,
                                         const char* exception_name,
                                         const char* message);
-
-bool open_serial_port(const char *portname, int baudrate_speed){
-  // TODO values from method
-  speed_t baudrate = toBaudrate(baudrate_speed);
-
-  memset(&tio,0,sizeof(tio));
-  tio.c_iflag=0;
-  tio.c_oflag=0;
-  tio.c_cflag=CS8|CREAD|CLOCAL;
-  tio.c_lflag=0;
-  tio.c_cc[VMIN]=1;
-  tio.c_cc[VTIME]=5;
-
-  tty_fd = open(portname, O_RDWR | O_NONBLOCK); 
-  bool success = (tty_fd != -1);
-  if(success){
-    cfsetospeed(&tio, baudrate);
-    cfsetispeed(&tio, baudrate);
-    tcsetattr(tty_fd,TCSANOW,&tio);
-  }
-  return success;
-}
-
-void close_serial_port(){
-  // TODO check open
-  close(tty_fd);
-}
-
-
-
 /*
 Called the first time a native function with a given name is called,
  to resolve the Dart name of the native function into a C function pointer.
 */
 Dart_NativeFunction ResolveName(Dart_Handle name, int argc);
 
-/*
-Called when the extension is loaded.
-*/
-DART_EXPORT Dart_Handle serial_port_Init(Dart_Handle parent_library) {
-  if (Dart_IsError(parent_library)) { return parent_library; }
+Dart_Handle HandleError(Dart_Handle handle);
 
-  Dart_Handle result_code = Dart_SetNativeResolver(parent_library, ResolveName);
-  if (Dart_IsError(result_code)) return result_code;
-
-
-  return Dart_Null();
-}
-
-Dart_Handle HandleError(Dart_Handle handle) {
-  if (Dart_IsError(handle)) Dart_PropagateError(handle);
-  return handle;
-}
-
-void SystemOpen(Dart_NativeArguments arguments) {
+void nativeOpen(Dart_NativeArguments arguments) {
   Dart_EnterScope();
   Dart_Handle portname_object = HandleError(Dart_GetNativeArgument(arguments, 0));
   Dart_Handle baudrate_speed_object = HandleError(Dart_GetNativeArgument(arguments, 1));
@@ -115,7 +69,7 @@ void SystemOpen(Dart_NativeArguments arguments) {
     if (Dart_IsError(error)) Dart_PropagateError(error);
     Dart_ThrowException(error);
   }
-  memset(&tio,0,sizeof(tio));
+  memset(&tio, 0, sizeof(tio));
   tio.c_iflag=0;
   tio.c_oflag=0;
   tio.c_cflag=CS8|CREAD|CLOCAL;
@@ -134,19 +88,29 @@ void SystemOpen(Dart_NativeArguments arguments) {
 
   cfsetospeed(&tio, baudrate);
   cfsetispeed(&tio, baudrate);
-  tcsetattr(tty_fd,TCSANOW,&tio);
+  tcsetattr(tty_fd, TCSANOW, &tio);
    
   Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(true)));
   Dart_ExitScope();
 }
 
-void SystemClose(Dart_NativeArguments arguments){
+void nativeClose(Dart_NativeArguments arguments){
   Dart_EnterScope();
 
-  close_serial_port();
+  close(tty_fd);
 
   Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(true)));
   Dart_ExitScope();
+}
+
+DART_EXPORT Dart_Handle serial_port_Init(Dart_Handle parent_library) {
+  if (Dart_IsError(parent_library)) { return parent_library; }
+
+  Dart_Handle result_code = Dart_SetNativeResolver(parent_library, ResolveName);
+  if (Dart_IsError(result_code)) return result_code;
+
+
+  return Dart_Null();
 }
 
 Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {
@@ -157,11 +121,16 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {
   const char* cname;
   HandleError(Dart_StringToCString(name, &cname));
 
-  if (strcmp("SystemOpen", cname) == 0) result = SystemOpen;
-  if (strcmp("SystemClose", cname) == 0) result = SystemClose;
+  if (strcmp("nativeClose", cname) == 0) result = nativeClose;
+  if (strcmp("nativeClose", cname) == 0) result = nativeClose;
 
   Dart_ExitScope();
   return result;
+}
+
+Dart_Handle HandleError(Dart_Handle handle) {
+  if (Dart_IsError(handle)) Dart_PropagateError(handle);
+  return handle;
 }
 
 Dart_Handle NewDartExceptionWithMessage(const char* library_url,

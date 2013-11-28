@@ -16,9 +16,9 @@ import 'dart-ext:serial_port';
 	//SerialPort(this.device, this.baudrate);
 
 	// TODO private
-	bool open(String portname, int baudrateSpeed) native "SystemOpen";
+	bool open(String portname, int baudrateSpeed) native "nativeClose";
 
-	bool close() native "SystemClose";
+	bool close() native "nativeClose";
 
 
 	//Future<bool open();
