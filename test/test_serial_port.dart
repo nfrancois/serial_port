@@ -30,6 +30,16 @@ void main() {
       var successOpen = open('Does not exist', 9600);
       expect(successOpen, isFalse);
     });
+
+   test('Fail with unkwnon baudrate', (){
+      try {
+        open(dummySerialPort.path, 1);
+      } catch(e){
+        expect(e, isArgumentError);
+        expect(e.message, "Unknown baudrate speed=1");   
+      }
+      
+    });
   });
 
 }

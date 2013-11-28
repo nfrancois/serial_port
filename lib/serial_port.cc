@@ -1,7 +1,8 @@
 // Licence 2
 
-#include <string.h>
+#include <cstring>
 #include <stdlib.h>
+#include <sstream>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -32,8 +33,14 @@ speed_t toBaudrate(int speed){
     case 115200: return B115200;
     case 230400: return B230400;
   }
-  throw "Unknown baudrate";
+  std::stringstream ss;
+  ss << "Unknown baudrate speed=" << speed;
+  throw ss.str().c_str();
 }
+
+Dart_Handle NewDartExceptionWithMessage(const char* library_url,
+                                        const char* exception_name,
+                                        const char* message);
 
 bool open_serial_port(const char *portname, int baudrate_speed){
   if(tty_fd != 0){
@@ -66,6 +73,8 @@ void close_serial_port(){
   // TODO check open
   close(tty_fd);
 }
+
+
 
 /*
 Called the first time a native function with a given name is called,
@@ -103,11 +112,15 @@ void SystemOpen(Dart_NativeArguments arguments) {
   int64_t baudrate_speed;
   HandleError(Dart_StringToCString(portname_object, &portname));
   HandleError(Dart_IntegerToInt64(baudrate_speed_object, &baudrate_speed));
-  
-  bool success = open_serial_port(portname, baudrate_speed);
-
-  Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(success)));
-  Dart_ExitScope();
+  try {
+    bool success = open_serial_port(portname, baudrate_speed);
+    Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(success)));
+    Dart_ExitScope();
+  } catch (const char* e){
+    Dart_Handle error = NewDartExceptionWithMessage("dart:core", "ArgumentError", e);
+    if (Dart_IsError(error)) Dart_PropagateError(error);
+    Dart_ThrowException(error);
+  }
 }
 
 void SystemClose(Dart_NativeArguments arguments){
@@ -134,6 +147,29 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {
   return result;
 }
 
+Dart_Handle NewDartExceptionWithMessage(const char* library_url,
+                                        const char* exception_name,
+                                        const char* message) {
+  // Create a Dart Exception object with a message.
+  Dart_Handle type = Dart_GetType(Dart_LookupLibrary(
+      Dart_NewStringFromCString(library_url)),
+      Dart_NewStringFromCString(exception_name), 0, NULL);
+
+  if (Dart_IsError(type)) {
+    Dart_PropagateError(type);
+  }
+  if (message != NULL) {
+    Dart_Handle args[1];
+    args[0] = Dart_NewStringFromCString(message);
+    if (Dart_IsError(args[0])) {
+      Dart_PropagateError(args[0]);
+    }
+    return Dart_New(type, Dart_Null(), 1, args);
+  } else {
+    return Dart_New(type, Dart_Null(), 0, NULL);
+  }
+
+}
 
 /*
 
