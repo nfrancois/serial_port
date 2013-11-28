@@ -5,3 +5,4 @@
 packages
 pubspec.lock
 *.tmp
+.DS_Store
