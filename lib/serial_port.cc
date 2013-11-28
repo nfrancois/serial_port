@@ -43,11 +43,6 @@ Dart_Handle NewDartExceptionWithMessage(const char* library_url,
                                         const char* message);
 
 bool open_serial_port(const char *portname, int baudrate_speed){
-  if(tty_fd != 0){
-    //throw "Cannot open new serial port";
-  }
-  //tcgetattr(STDOUT_FILENO,&old_stdio);
-
   // TODO values from method
   speed_t baudrate = toBaudrate(baudrate_speed);
 
@@ -112,15 +107,37 @@ void SystemOpen(Dart_NativeArguments arguments) {
   int64_t baudrate_speed;
   HandleError(Dart_StringToCString(portname_object, &portname));
   HandleError(Dart_IntegerToInt64(baudrate_speed_object, &baudrate_speed));
+  speed_t baudrate;
   try {
-    bool success = open_serial_port(portname, baudrate_speed);
-    Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(success)));
-    Dart_ExitScope();
+    baudrate = toBaudrate(baudrate_speed);
   } catch (const char* e){
     Dart_Handle error = NewDartExceptionWithMessage("dart:core", "ArgumentError", e);
     if (Dart_IsError(error)) Dart_PropagateError(error);
     Dart_ThrowException(error);
   }
+  memset(&tio,0,sizeof(tio));
+  tio.c_iflag=0;
+  tio.c_oflag=0;
+  tio.c_cflag=CS8|CREAD|CLOCAL;
+  tio.c_lflag=0;
+  tio.c_cc[VMIN]=1;
+  tio.c_cc[VTIME]=5;
+
+  tty_fd = open(portname, O_RDWR | O_NONBLOCK); 
+  if(tty_fd == -1){
+    std::stringstream ss;
+    ss << "Impossible to read portname=" << portname;    
+    Dart_Handle error = NewDartExceptionWithMessage("dart:io", "FileSystemException", ss.str().c_str());
+    if (Dart_IsError(error)) Dart_PropagateError(error);
+    Dart_ThrowException(error);     
+  }
+
+  cfsetospeed(&tio, baudrate);
+  cfsetispeed(&tio, baudrate);
+  tcsetattr(tty_fd,TCSANOW,&tio);
+   
+  Dart_SetReturnValue(arguments, HandleError(Dart_NewBoolean(true)));
+  Dart_ExitScope();
 }
 
 void SystemClose(Dart_NativeArguments arguments){

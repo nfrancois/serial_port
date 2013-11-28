@@ -27,8 +27,12 @@ void main() {
 	  });
 
     test('Fail with unkwnon portname', (){
-      var successOpen = open('Does not exist', 9600);
-      expect(successOpen, isFalse);
+      try {
+        open("notExist", 9600);  
+      } catch(e){
+        expect(e, isException);
+        expect(e.message, "Impossible to read portname=notExist");   
+      }
     });
 
    test('Fail with unkwnon baudrate', (){
