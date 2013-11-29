@@ -6,3 +6,7 @@ packages
 pubspec.lock
 *.tmp
 .DS_Store
+.buildlog
+.project
+.idea
+*.iml
