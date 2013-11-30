@@ -20,7 +20,10 @@ void main() {
     tearDown(() => dummySerialPort.deleteSync());
     
     test('Just open and close', () {
-      new SerialPort(dummySerialPort.path, 9600)..close();   
+      var serial =  new SerialPort(dummySerialPort.path, 9600);
+      expect(serial.state, SerialPort.OPEN);
+      serial.close();
+      expect(serial.state, SerialPort.CLOSED);
 	  });
 
     test('Fail with unkwnon portname', (){
