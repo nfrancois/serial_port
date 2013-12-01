@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
-#include "dart_api.h"
-
+#include "include/dart_api.h"
+ #include "include/dart_native_api.h"
 
 Dart_Handle NewDartExceptionWithMessage(const char* library_url,
                                         const char* exception_name,
@@ -21,7 +21,7 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc);
 
 Dart_Handle HandleError(Dart_Handle handle);
 
-void nativeOpen(Dart_NativeArguments arguments) {
+void openSync(Dart_NativeArguments arguments) {
   Dart_EnterScope();
   Dart_Handle portname_object = HandleError(Dart_GetNativeArgument(arguments, 0));
   Dart_Handle baudrate_speed_object = HandleError(Dart_GetNativeArgument(arguments, 1));
@@ -91,7 +91,7 @@ void nativeOpen(Dart_NativeArguments arguments) {
   Dart_ExitScope();
 }
 
-void nativeClose(Dart_NativeArguments arguments){
+void closeSync(Dart_NativeArguments arguments){
   int64_t tty_fd;
 
   Dart_Handle tty_fd_object = HandleError(Dart_GetNativeArgument(arguments, 0));
@@ -118,8 +118,8 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {
   const char* cname;
   HandleError(Dart_StringToCString(name, &cname));
 
-  if (strcmp("nativeOpen", cname) == 0) result = nativeOpen;
-  if (strcmp("nativeClose", cname) == 0) result = nativeClose;
+  if (strcmp("closeSync", cname) == 0) result = closeSync;
+  if (strcmp("openSync", cname) == 0) result = openSync;
 
   Dart_ExitScope();
   return result;

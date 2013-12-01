@@ -1,6 +1,6 @@
 bits: 0 # 0 means the bits of Dart SDK
 compiler:
-  includes: ['{DART_SDK}/bin', '{DART_SDK}/include']
+  includes: ['{DART_SDK}/bin', '{DART_SDK}']
   input_files:
   - 'serial_port.cc'
 clean: [ '*.exp', '*.lib', '*.o', '*.obj']

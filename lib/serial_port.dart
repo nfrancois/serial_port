@@ -39,6 +39,6 @@ class SerialPort {
 
 }
 
-int	_open(String portname, int baudrateSpeed) native "nativeOpen";
+int	_open(String portname, int baudrateSpeed) native "openSync";
 
-bool _close(int ttyFd) native "nativeClose";
+bool _close(int ttyFd) native "closeSync";
