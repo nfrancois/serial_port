@@ -169,11 +169,33 @@ void wrappedOpenAsyncService(Dart_Port dest_port_id, Dart_CObject* message) {
   Dart_PostCObject(reply_port_id, &result);
 }
 
+// TODO maybe check type
+void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message){
+ Dart_Port reply_port_id = message->value.as_array.values[0]->value.as_send_port;
+ Dart_CObject result;
+ int argc = message->value.as_array.length - 1;                        \
+ Dart_CObject** argv = message->value.as_array.values + 1;
+ char *name = argv[0]->value.as_string;
+ argv++;
+ argc--;
+ if (strcmp("open", name) == 0) {
+   //Dart_CObject* param0 = message->value.as_array.values[0];
+   //Dart_CObject* param1 = message->value.as_array.values[1];
+   const char* portname = argv[0]->value.as_string;
+   int64_t baudrate_speed = argv[1]->value.as_int64;
 
-void openAsyncServicePort(Dart_NativeArguments arguments) {
+   int64_t tty_fd = openAsync(portname, baudrate_speed);
+
+   result.type = Dart_CObject_kInt64;
+   result.value.as_int64 = tty_fd;
+ }
+ Dart_PostCObject(reply_port_id, &result);
+}
+
+void serialPortServicePort(Dart_NativeArguments arguments) {
   Dart_EnterScope();
   Dart_SetReturnValue(arguments, Dart_Null());
-  Dart_Port service_port = Dart_NewNativePort("OpenAsyncServicePort", wrappedOpenAsyncService, true);
+  Dart_Port service_port = Dart_NewNativePort("SerialPortServicePort", wrappedSerialPortServicePort, true);
   if (service_port != ILLEGAL_PORT) {
     Dart_Handle send_port = HandleError(Dart_NewSendPort(service_port));
     Dart_SetReturnValue(arguments, send_port);
@@ -202,7 +224,7 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {
 
   if (strcmp("openSync", cname) == 0) result = openSync;
   if (strcmp("closeSync", cname) == 0) result = closeSync;
-  if (strcmp("openAsyncServicePort", cname) == 0) result = openAsyncServicePort;
+  if (strcmp("serialPortServicePort", cname) == 0) result = serialPortServicePort;
 
   Dart_ExitScope();
   return result;

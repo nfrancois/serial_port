@@ -67,10 +67,11 @@ class SerialPort {
   Future<int> _openAsync(String portname, int baudrate) {
     var completer = new Completer();
     var replyPort = new RawReceivePort();
-    var args = new List(3);
-    args[0] = portname;
-    args[1] = baudrate;
-    args[2] = replyPort.sendPort;
+    var args = new List(4);
+    args[0] = replyPort.sendPort;
+    args[1] = "open";
+    args[2] = portname;
+    args[3] = baudrate;
     _servicePort.send(args);
     replyPort.handler = (result) {
       replyPort.close();
@@ -85,12 +86,12 @@ class SerialPort {
 
   SendPort get _servicePort {
     if (_port == null) {
-      _port = _openServicePort();
+      _port = _newServicePort();
     }
     return _port;
   }
 
-  SendPort _openServicePort() native "openAsyncServicePort";
+  SendPort _newServicePort() native "serialPortServicePort";
 
 }
 
