@@ -12,38 +12,53 @@ class SerialPort {
   static const int CLOSED = 3;
   static const int CLOSING = 2;
 
+  static const List<int> AUTHORIZED_BAUDATE_SPEED =  const [50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400];
+
   static SendPort _port;
 
   final String portname;
   final int baudrate;
 
   final List<StreamController> _openControllers = [];
+  final List<StreamController> _errorControllers = [];
 
+  // TODO fail state ?
   int _state;
 
   int _ttyFd;
 
   SerialPort(this.portname, this.baudrate){
     _state = CONNECTING;
-    //_ttyFd = _open(portname, baudrate);
+    if(!AUTHORIZED_BAUDATE_SPEED.contains(baudrate)){
+      throw new ArgumentError("Unknown baudrate speed=$baudrate");
+    }
     _openAsync(portname, baudrate).then((value) {
-      _ttyFd = value;
-      _state = OPEN;
-      _openControllers.forEach((controller) => controller.add(true));
+      if(value > 0){
+        _ttyFd = value;
+        _state = OPEN;
+        _openControllers.forEach((controller) => controller.add(true));
+      } else {
+        _errorControllers.forEach((controller) => controller.add("Impossible to read portname=$portname"));
+      }
     });
-    // TODO on error ?
   }
 
-  // TODO : event ?
   Stream<bool> get onOpen {
     StreamController<bool> controller = new StreamController();
     _openControllers.add(controller);
     return controller.stream;
   }
 
+  Stream<String> get onError {
+    StreamController<bool> controller = new StreamController();
+    _errorControllers.add(controller);
+    return controller.stream;
+  }
+
   void close(){
+    // if status != OPEN
     _state = CLOSING;
-    //_close(_ttyFd);
+    _close(_ttyFd);
     _state = CLOSED;
   }
 

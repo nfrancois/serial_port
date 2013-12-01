@@ -4,15 +4,6 @@ import 'package:unittest/unittest.dart';
 import 'package:serial_port/serial_port.dart';
 import 'dart:io';
 
-// TODO : test with unnitest
-// TODO : setup & tear down
-
-void check(bool condition, String message) {
-  if (!condition) {
-    throw new StateError(message);
-  }
-}
-
 void main() {
   var dummySerialPort;
   group('Serial port', () {
@@ -27,19 +18,13 @@ void main() {
         serial.close();
         expect(serial.state, SerialPort.CLOSED);
       });
-      //serial.openAsync(dummySerialPort.path, 9600).then(print);
-      //expect(serial.state, SerialPort.OPEN);
-      //serial.close();
-      //expect(serial.state, SerialPort.CLOSED);
 	  });
-/*
+
     test('Fail with unkwnon portname', (){
-      try {
-        new SerialPort("notExist", 9600);  
-      } catch(e){
-        expect(e, isException);
-        expect(e.message, "Impossible to read portname=notExist");   
-      }
+      var serial = new SerialPort("notExist", 9600);
+      serial.onError.listen((message){
+        expect(message, "Impossible to read portname=notExist");
+      });
     });
 
    test('Fail with unkwnon baudrate', (){
@@ -47,11 +32,10 @@ void main() {
         new SerialPort(dummySerialPort.path, 1);
       } catch(e){
         expect(e, isArgumentError);
-        expect(e.message, "Unknown baudrate speed=1");   
+        expect(e.message, "Unknown baudrate speed=1");
       }
       
     });
-    */
   });
 
 }
