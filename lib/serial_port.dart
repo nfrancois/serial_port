@@ -12,8 +12,12 @@ class SerialPort {
   static const int CLOSED = 3;
   static const int CLOSING = 2;
 
+  static SendPort _port;
+
   final String portname;
   final int baudrate;
+
+  final List<StreamController> _openControllers = [];
 
   int _state;
 
@@ -21,21 +25,57 @@ class SerialPort {
 
   SerialPort(this.portname, this.baudrate){
     _state = CONNECTING;
-    _ttyFd = _open(portname, baudrate);
-    _state = OPEN;
+    //_ttyFd = _open(portname, baudrate);
+    _openAsync(portname, baudrate).then((value) {
+      _ttyFd = value;
+      _state = OPEN;
+      _openControllers.forEach((controller) => controller.add(true));
+    });
+    // TODO on error ?
+  }
+
+  // TODO : event ?
+  Stream<bool> get onOpen {
+    StreamController<bool> controller = new StreamController();
+    _openControllers.add(controller);
+    return controller.stream;
   }
 
   void close(){
     _state = CLOSING;
-    _close(_ttyFd);
+    //_close(_ttyFd);
     _state = CLOSED;
   }
 
   int get state => _state;
 
-//Stream<Event> onOpen(){
-//  WebSocket
-//}
+  Future<int> _openAsync(String portname, int baudrate) {
+    var completer = new Completer();
+    var replyPort = new RawReceivePort();
+    var args = new List(3);
+    args[0] = portname;
+    args[1] = baudrate;
+    args[2] = replyPort.sendPort;
+    _servicePort.send(args);
+    replyPort.handler = (result) {
+      replyPort.close();
+      if (result != null) {
+        completer.complete(result);
+      } else {
+        completer.completeError(new Exception("FAIL"));
+      }
+    };
+    return completer.future;
+  }
+
+  SendPort get _servicePort {
+    if (_port == null) {
+      _port = _openServicePort();
+    }
+    return _port;
+  }
+
+  SendPort _openServicePort() native "openAsyncServicePort";
 
 }
 
