@@ -104,7 +104,3 @@ class SerialPort {
   SendPort _newServicePort() native "serialPortServicePort";
 
 }
-
-int	_open(String portname, int baudrateSpeed) native "openSync";
-
-bool _close(int ttyFd) native "closeSync";
