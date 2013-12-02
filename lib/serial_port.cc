@@ -68,6 +68,10 @@ void closeAsync(int64_t tty_fd){
   close(tty_fd);
 }
 
+int sendAsync(int64_t tty_fd, const char* data){
+  return write(tty_fd, data, strlen(data));
+}
+
 // TODO maybe check type
 //   result.type = Dart_CObject_kNull;
 void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message){
@@ -96,6 +100,17 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
 
    result.type = Dart_CObject_kBool;
    result.value.as_bool = true;
+ } else  if (strcmp("send", name) == 0) {
+   int64_t tty_fd = argv[0]->value.as_int64;
+   const char* data = argv[1]->value.as_string;
+
+   int value = sendAsync(tty_fd, data);
+
+   result.type = Dart_CObject_kInt64;
+   result.value.as_int64 = value;
+ } else {
+   // TODO
+   printf("ERROR :Unknow function\n");
  }
  Dart_PostCObject(reply_port_id, &result);
 }

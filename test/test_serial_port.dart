@@ -27,6 +27,12 @@ void main() {
       serial.close();
     });
 
+    test('Just write', () {
+      var serial =  new SerialPort(dummySerialPort.path, 9600);
+      serial.onOpen.listen((_) => serial.send("Hello"));
+      serial.close();
+    });
+
     test('Fail with unkwnon portname', (){
       var serial = new SerialPort("notExist", 9600);
       serial.onError.listen((message){
@@ -41,7 +47,6 @@ void main() {
         expect(e, isArgumentError);
         expect(e.message, "Unknown baudrate speed=1");
       }
-      
     });
 
   });

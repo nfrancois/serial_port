@@ -55,6 +55,7 @@ class SerialPort {
   }
 
   void close(){
+    // TODO check OPEN
     _state = CLOSING;
     var replyPort = new RawReceivePort();
     var args = new List(3);
@@ -66,6 +67,26 @@ class SerialPort {
       replyPort.close();
       if (result != null) {
         _state = CLOSED;
+      }
+    };
+  }
+
+  void send(String data){
+    // TODO check OPEN
+    _state = CLOSING;
+    var replyPort = new RawReceivePort();
+    var args = new List(4);
+    args[0] = replyPort.sendPort;
+    args[1] = "send";
+    args[2] = _ttyFd;
+    args[3] = data;
+    _servicePort.send(args);
+    replyPort.handler = (result) {
+      replyPort.close();
+      if (result != null) {
+        if(result < 0){
+          _errorControllers.forEach((controller) => controller.add("Cannot write data=$data on serial port $nameport"));
+        }
       }
     };
   }
