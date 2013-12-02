@@ -9,7 +9,7 @@ void main() {
   group('Serial port', () {
     setUp(() => dummySerialPort = new File("dummySerialPort.tmp")..createSync());
     tearDown(() => dummySerialPort.deleteSync());
-    
+
     test('Just open', () {
       var serial =  new SerialPort(dummySerialPort.path, 9600);
       serial.onOpen.listen((success) {
@@ -20,11 +20,11 @@ void main() {
 
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path, 9600);
-      serial.onClose.listen((success) {
+      serial..onOpen.listen((_) => serial.close())
+            ..onClose.listen((success) {
         expect(success, isTrue);
         expect(serial.state, SerialPort.CLOSED);
       });
-      serial.close();
     });
 
     test('Just write', () {
@@ -48,7 +48,6 @@ void main() {
         expect(e.message, "Unknown baudrate speed=1");
       }
     });
-
   });
 
 }

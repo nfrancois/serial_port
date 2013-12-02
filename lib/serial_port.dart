@@ -43,7 +43,7 @@ class SerialPort {
   }
 
   Stream<String> get onError {
-    StreamController<bool> controller = new StreamController();
+    StreamController<String> controller = new StreamController();
     _errorControllers.add(controller);
     return controller.stream;
   }
@@ -66,6 +66,7 @@ class SerialPort {
     replyPort.handler = (result) {
       replyPort.close();
       if (result != null) {
+        _closeControllers.forEach((controller) => controller.add(true));
         _state = CLOSED;
       }
     };
