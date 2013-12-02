@@ -33,15 +33,7 @@ class SerialPort {
     if(!AUTHORIZED_BAUDATE_SPEED.contains(baudrate)){
       throw new ArgumentError("Unknown baudrate speed=$baudrate");
     }
-    _openAsync(portname, baudrate).then((value) {
-      if(value > 0){
-        _ttyFd = value;
-        _state = OPEN;
-        _openControllers.forEach((controller) => controller.add(true));
-      } else {
-        _errorControllers.forEach((controller) => controller.add("Impossible to read portname=$portname"));
-      }
-    });
+    _openAsync(portname, baudrate);
   }
 
   Stream<bool> get onOpen {
@@ -80,8 +72,7 @@ class SerialPort {
 
   int get state => _state;
 
-  Future<int> _openAsync(String portname, int baudrate) {
-    var completer = new Completer();
+  void _openAsync(String portname, int baudrate) {
     var replyPort = new RawReceivePort();
     var args = new List(4);
     args[0] = replyPort.sendPort;
@@ -92,12 +83,15 @@ class SerialPort {
     replyPort.handler = (result) {
       replyPort.close();
       if (result != null) {
-        completer.complete(result);
-      } else {
-        completer.completeError(new Exception("FAIL"));
+        if(result > 0){
+          _ttyFd = result;
+          _state = OPEN;
+          _openControllers.forEach((controller) => controller.add(true));
+        } else {
+          _errorControllers.forEach((controller) => controller.add("Impossible to read portname=$portname"));
+        }
       }
     };
-    return completer.future;
   }
 
   SendPort get _servicePort {
