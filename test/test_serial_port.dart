@@ -10,15 +10,22 @@ void main() {
     setUp(() => dummySerialPort = new File("dummySerialPort.tmp")..createSync());
     tearDown(() => dummySerialPort.deleteSync());
     
-    test('Just open and close', () {
+    test('Just open', () {
       var serial =  new SerialPort(dummySerialPort.path, 9600);
       serial.onOpen.listen((success) {
         expect(success, isTrue);
         expect(serial.state, SerialPort.OPEN);
-        serial.close();
-        expect(serial.state, SerialPort.CLOSED);
       });
 	  });
+
+    test('Just close', () {
+      var serial =  new SerialPort(dummySerialPort.path, 9600);
+      serial.onClose.listen((success) {
+        expect(success, isTrue);
+        expect(serial.state, SerialPort.CLOSED);
+      });
+      serial.close();
+    });
 
     test('Fail with unkwnon portname', (){
       var serial = new SerialPort("notExist", 9600);

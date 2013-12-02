@@ -143,6 +143,10 @@ int64_t openAsync(const char* portname, int64_t baudrate_speed){
   return tty_fd;
 }
 
+void closeAsync(int64_t tty_fd){
+  close(tty_fd);
+}
+
 void wrappedOpenAsyncService(Dart_Port dest_port_id, Dart_CObject* message) {
   Dart_Port reply_port_id = ILLEGAL_PORT;
   if (message->type == Dart_CObject_kArray && message->value.as_array.length == 3) {
@@ -178,6 +182,7 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
  char *name = argv[0]->value.as_string;
  argv++;
  argc--;
+ // TODO replace by switch
  if (strcmp("open", name) == 0) {
    //Dart_CObject* param0 = message->value.as_array.values[0];
    //Dart_CObject* param1 = message->value.as_array.values[1];
@@ -188,6 +193,13 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
 
    result.type = Dart_CObject_kInt64;
    result.value.as_int64 = tty_fd;
+ } else  if (strcmp("close", name) == 0) {
+   int64_t tty_fd = argv[0]->value.as_int64;
+
+   close(tty_fd);
+
+   result.type = Dart_CObject_kBool;
+   result.value.as_bool = true;
  }
  Dart_PostCObject(reply_port_id, &result);
 }

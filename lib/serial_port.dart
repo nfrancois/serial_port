@@ -21,6 +21,7 @@ class SerialPort {
 
   final List<StreamController> _openControllers = [];
   final List<StreamController> _errorControllers = [];
+  final List<StreamController> _closeControllers = [];
 
   // TODO fail state ?
   int _state;
@@ -55,11 +56,26 @@ class SerialPort {
     return controller.stream;
   }
 
+  Stream<bool> get onClose {
+    StreamController<bool> controller = new StreamController();
+    _closeControllers.add(controller);
+    return controller.stream;
+  }
+
   void close(){
-    // if status != OPEN
     _state = CLOSING;
-    _close(_ttyFd);
-    _state = CLOSED;
+    var replyPort = new RawReceivePort();
+    var args = new List(3);
+    args[0] = replyPort.sendPort;
+    args[1] = "close";
+    args[2] = _ttyFd;
+    _servicePort.send(args);
+    replyPort.handler = (result) {
+      replyPort.close();
+      if (result != null) {
+        _state = CLOSED;
+      }
+    };
   }
 
   int get state => _state;
