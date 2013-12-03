@@ -14,16 +14,14 @@ void main() {
       var serial =  new SerialPort(dummySerialPort.path, baudrate: 9600);
       serial.open().then((success) {
         expect(success, isTrue);
-        expect(serial.readyState, SerialPort.OPEN);
       });
 	  });
 
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial..open().then((_) => serial.close())
-            ..onClose.listen((success) {
+            ..close().then((success) {
         expect(success, isTrue);
-        expect(serial.readyState, SerialPort.CLOSED);
       });
     });
 

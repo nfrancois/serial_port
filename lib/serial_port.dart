@@ -13,13 +13,8 @@ class SerialPort {
 
   static const List<int> AUTHORIZED_BAUDATE_SPEED =  const [50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 4000000];
 
-  static SendPort _port;
-
   final String portname;
   final int baudrate;
-
-  final List<StreamController> _errorControllers = [];
-  final List<StreamController> _closeControllers = [];
 
   // TODO fail state ?
   int _state;
@@ -33,39 +28,29 @@ class SerialPort {
     }
   }
 
-  Stream<String> get onError {
-    StreamController<String> controller = new StreamController();
-    _errorControllers.add(controller);
-    return controller.stream;
-  }
-
-  // TODO un Future
-  Stream<bool> get onClose {
-    StreamController<bool> controller = new StreamController();
-    _closeControllers.add(controller);
-    return controller.stream;
-  }
-
-  void close(){
+  Future<bool> close(){
     // TODO check OPEN
     _state = CLOSING;
+    var completer = new Completer<bool>();
     var replyPort = new RawReceivePort();
-    var args = new List(3);
-    args[0] = replyPort.sendPort;
-    args[1] = "close";
-    args[2] = _ttyFd;
-    _servicePort.send(args);
+    _servicePort.send([replyPort.sendPort, "close", _ttyFd]);
     replyPort.handler = (result) {
       replyPort.close();
       if (result != null) {
-        _closeControllers.forEach((controller) => controller.add(true));
+        // TODO return value ?
+
         _state = CLOSED;
+        completer.complete(true);
+      } else {
+        completer.completeError("Unexpected error");
       }
     };
+    return completer.future;
   }
 
   // TODO rename sendString
-  // TODO send with List<int> 
+  // TODO send with List<int>
+  // TODO Future
   void send(String data){
     // TODO check OPEN
     _state = CLOSING;
@@ -80,13 +65,11 @@ class SerialPort {
       replyPort.close();
       if (result != null) {
         if(result < 0){
-          _errorControllers.forEach((controller) => controller.add("Cannot write data=$data on serial port $nameport"));
+          //_errorControllers.forEach((controller) => controller.add("Cannot write data=$data on serial port $nameport"));
         }
       }
     };
   }
-
-  int get readyState => _state;
 
   Future<bool> open() {
     var replyPort = new RawReceivePort();
@@ -107,6 +90,10 @@ class SerialPort {
     };
     return completer.future;
   }
+
+   // Communication with native part
+
+  static SendPort _port;
 
   SendPort get _servicePort {
     if (_port == null) {
