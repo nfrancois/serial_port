@@ -36,6 +36,7 @@ class SerialPort {
     _openAsync(portname, baudrate);
   }
 
+  // TODO un Future
   Stream<bool> get onOpen {
     StreamController<bool> controller = new StreamController();
     _openControllers.add(controller);
@@ -48,6 +49,7 @@ class SerialPort {
     return controller.stream;
   }
 
+  // TODO un Future
   Stream<bool> get onClose {
     StreamController<bool> controller = new StreamController();
     _closeControllers.add(controller);
@@ -72,6 +74,8 @@ class SerialPort {
     };
   }
 
+  // TODO rename sendString
+  // TODO send with List<int> 
   void send(String data){
     // TODO check OPEN
     _state = CLOSING;
