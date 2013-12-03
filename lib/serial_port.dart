@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart-ext:serial_port';
 
-
 class SerialPort {
 
   static const int CONNECTING = 0;
@@ -12,14 +11,13 @@ class SerialPort {
   static const int CLOSED = 3;
   static const int CLOSING = 2;
 
-  static const List<int> AUTHORIZED_BAUDATE_SPEED =  const [50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400];
+  static const List<int> AUTHORIZED_BAUDATE_SPEED =  const [50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 4000000];
 
   static SendPort _port;
 
   final String portname;
   final int baudrate;
 
-  final List<StreamController> _openControllers = [];
   final List<StreamController> _errorControllers = [];
   final List<StreamController> _closeControllers = [];
 
@@ -33,14 +31,6 @@ class SerialPort {
     if(!AUTHORIZED_BAUDATE_SPEED.contains(baudrate)){
       throw new ArgumentError("Unknown baudrate speed=$baudrate");
     }
-    _openAsync(portname, baudrate);
-  }
-
-  // TODO un Future
-  Stream<bool> get onOpen {
-    StreamController<bool> controller = new StreamController();
-    _openControllers.add(controller);
-    return controller.stream;
   }
 
   Stream<String> get onError {
@@ -98,26 +88,24 @@ class SerialPort {
 
   int get readyState => _state;
 
-  void _openAsync(String portname, int baudrate) {
+  Future<bool> open() {
     var replyPort = new RawReceivePort();
-    var args = new List(4);
-    args[0] = replyPort.sendPort;
-    args[1] = "open";
-    args[2] = portname;
-    args[3] = baudrate;
-    _servicePort.send(args);
+    var completer = new Completer<bool>();
+    _servicePort.send([replyPort.sendPort, "open", portname, baudrate]);
     replyPort.handler = (result) {
       replyPort.close();
       if (result != null) {
-        if(result > 0){
-          _ttyFd = result;
+        if(result >= 0){
           _state = OPEN;
-          _openControllers.forEach((controller) => controller.add(true));
+          completer.complete(true);
         } else {
-          _errorControllers.forEach((controller) => controller.add("Impossible to read portname=$portname"));
+          completer.completeError("Cannot open portname=$portname");
         }
+      } else {
+        completer.completeError("Unexpected error");
       }
     };
+    return completer.future;
   }
 
   SendPort get _servicePort {

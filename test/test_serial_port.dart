@@ -12,7 +12,7 @@ void main() {
 
     test('Just open', () {
       var serial =  new SerialPort(dummySerialPort.path, baudrate: 9600);
-      serial.onOpen.listen((success) {
+      serial.open().then((success) {
         expect(success, isTrue);
         expect(serial.readyState, SerialPort.OPEN);
       });
@@ -20,7 +20,7 @@ void main() {
 
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
-      serial..onOpen.listen((_) => serial.close())
+      serial..open().then((_) => serial.close())
             ..onClose.listen((success) {
         expect(success, isTrue);
         expect(serial.readyState, SerialPort.CLOSED);
@@ -34,15 +34,13 @@ void main() {
 
     test('Just write', () {
       var serial =  new SerialPort(dummySerialPort.path);
-      serial.onOpen.listen((_) => serial.send("Hello"));
+      serial.open().then((_) => serial.send("Hello"));
       serial.close();
     });
 
     test('Fail with unkwnon portname', (){
       var serial = new SerialPort("notExist");
-      serial.onError.listen((message){
-        expect(message, "Impossible to read portname=notExist");
-      });
+      serial.open().catchError((error) => expect(error, "Cannot open portname=notExist"));
     });
 
    test('Fail with unkwnon baudrate', (){

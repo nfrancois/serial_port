@@ -26,6 +26,7 @@ int64_t openAsync(const char* portname, int64_t baudrate_speed){
   speed_t baudrate;
 
   switch(baudrate_speed){
+    // TODO baudrate 0 ? B0
     case 50: baudrate = B50; break;
     case 75: baudrate = B75; break;
     case 110: baudrate = B110; break;
@@ -44,6 +45,8 @@ int64_t openAsync(const char* portname, int64_t baudrate_speed){
     case 57600: baudrate = B57600; break;
     case 115200: baudrate = B115200; break;
     case 230400: baudrate = B230400; break;
+    // TODO if LINUX case 4000000: baudrate = B4000000; break;
+
   }
 
   struct termios tio;
@@ -108,9 +111,11 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
 
    result.type = Dart_CObject_kInt64;
    result.value.as_int64 = value;
+ } else  if (strcmp("read", name) == 0) {
+
  } else {
-   // TODO
-   printf("ERROR :Unknow function\n");
+    // TODO
+    printf("ERROR :Unknow function\n");
  }
  Dart_PostCObject(reply_port_id, &result);
 }
