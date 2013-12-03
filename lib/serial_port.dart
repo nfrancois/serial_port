@@ -28,7 +28,7 @@ class SerialPort {
 
   int _ttyFd;
 
-  SerialPort(this.portname, this.baudrate){
+  SerialPort(this.portname, {this.baudrate : 9600}){
     _state = CONNECTING;
     if(!AUTHORIZED_BAUDATE_SPEED.contains(baudrate)){
       throw new ArgumentError("Unknown baudrate speed=$baudrate");
