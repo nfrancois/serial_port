@@ -92,7 +92,7 @@ class SerialPort {
     };
   }
 
-  int get state => _state;
+  int get readyState => _state;
 
   void _openAsync(String portname, int baudrate) {
     var replyPort = new RawReceivePort();

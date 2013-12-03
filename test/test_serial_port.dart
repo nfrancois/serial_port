@@ -14,7 +14,7 @@ void main() {
       var serial =  new SerialPort(dummySerialPort.path, baudrate: 9600);
       serial.onOpen.listen((success) {
         expect(success, isTrue);
-        expect(serial.state, SerialPort.OPEN);
+        expect(serial.readyState, SerialPort.OPEN);
       });
 	  });
 
@@ -23,7 +23,7 @@ void main() {
       serial..onOpen.listen((_) => serial.close())
             ..onClose.listen((success) {
         expect(success, isTrue);
-        expect(serial.state, SerialPort.CLOSED);
+        expect(serial.readyState, SerialPort.CLOSED);
       });
     });
 
