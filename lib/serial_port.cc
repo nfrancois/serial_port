@@ -109,8 +109,6 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
 
    int value = sendAsync(tty_fd, data);
 
-   printf("value write %d", value);
-
    result.type = Dart_CObject_kInt64;
    result.value.as_int64 = value;
  } else  if (strcmp("read", name) == 0) {

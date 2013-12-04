@@ -23,18 +23,15 @@ class SerialPort {
   Future<bool> close(){
     // TODO check OPEN
     var completer = new Completer<bool>();
-    var replyPort = new RawReceivePort();
+    var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, "close", _ttyFd]);
-    replyPort.handler = (result) {
-      replyPort.close();
+    replyPort.first.then((result) {
       if (result != null) {
-        // TODO return value ?
-        _ttyFd = -1;
-        completer.complete(true);
+          completer.complete(true);
       } else {
-        completer.completeError("Unexpected error");
+        completer.completeError("Unexpected error when closing");
       }
-    };
+    });
     return completer.future;
   }
 
@@ -43,10 +40,9 @@ class SerialPort {
   Future<bool> send(String data){
     // TODO check OPEN
     var completer = new Completer<bool>();
-    var replyPort = new RawReceivePort();
+    var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, "send", _ttyFd, data]);
-    replyPort.handler = (result) {
-      replyPort.close();
+    replyPort.first.then((result) {
       if (result != null) {
         if(result >= 0){
           completer.complete(true);
@@ -54,18 +50,17 @@ class SerialPort {
           completer.completeError("Impossible to write.");
         }
       } else {
-        completer.completeError("Unexpected error");
+        completer.completeError("Unexpected error when writing");
       }
-    };
+    });
     return completer.future;
   }
 
   Future<bool> open() {
-    var replyPort = new RawReceivePort();
+    var replyPort = new ReceivePort();
     var completer = new Completer<bool>();
     _servicePort.send([replyPort.sendPort, "open", portname, baudrate]);
-    replyPort.handler = (result) {
-      replyPort.close();
+    replyPort.first.then((result) {
       if (result != null) {
         if(result >= 0){
           _ttyFd = result;
@@ -74,9 +69,9 @@ class SerialPort {
           completer.completeError("Cannot open portname=$portname");
         }
       } else {
-        completer.completeError("Unexpected error");
+        completer.completeError("Unexpected error when opening");
       }
-    };
+    });
     return completer.future;
   }
 
