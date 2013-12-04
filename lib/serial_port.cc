@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include "include/dart_api.h"
- #include "include/dart_native_api.h"
+#include "include/dart_native_api.h"
 
 Dart_Handle NewDartExceptionWithMessage(const char* library_url,
                                         const char* exception_name,
@@ -21,22 +21,12 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc);
 
 Dart_Handle HandleError(Dart_Handle handle);
 
-void openSync(Dart_NativeArguments arguments) {
-  Dart_EnterScope();
-  Dart_Handle portname_object = HandleError(Dart_GetNativeArgument(arguments, 0));
-  Dart_Handle baudrate_speed_object = HandleError(Dart_GetNativeArgument(arguments, 1));
-
-  // TODO exception with Dart_ThrowException
-  //if (!Dart_IsString(portname_object)) return NULL;
-  //if (!Dart_IsInteger(baudrate_speed_object)) return NULL;
-  const char* portname;
-  int64_t baudrate_speed;
-  HandleError(Dart_StringToCString(portname_object, &portname));
-  HandleError(Dart_IntegerToInt64(baudrate_speed_object, &baudrate_speed));
-  
+int64_t openAsync(const char* portname, int64_t baudrate_speed){
+  // Open serial port
   speed_t baudrate;
 
   switch(baudrate_speed){
+    // TODO baudrate 0 ? B0
     case 50: baudrate = B50; break;
     case 75: baudrate = B75; break;
     case 110: baudrate = B110; break;
@@ -55,16 +45,10 @@ void openSync(Dart_NativeArguments arguments) {
     case 57600: baudrate = B57600; break;
     case 115200: baudrate = B115200; break;
     case 230400: baudrate = B230400; break;
-    default:
-      std::stringstream ss;
-      ss << "Unknown baudrate speed=" << baudrate_speed;
-      Dart_Handle error = NewDartExceptionWithMessage("dart:core", "ArgumentError", ss.str().c_str());
-      if (Dart_IsError(error)) Dart_PropagateError(error);
-      Dart_ThrowException(error);  
-      // Prevent warning : uninitialized value
-      baudrate = B9600;    
+    // TODO if LINUX case 4000000: baudrate = B4000000; break;
+
   }
- 
+
   struct termios tio;
   memset(&tio, 0, sizeof(tio));
   tio.c_iflag=0;
@@ -74,31 +58,81 @@ void openSync(Dart_NativeArguments arguments) {
   tio.c_cc[VMIN]=1;
   tio.c_cc[VTIME]=5;
 
-  int tty_fd = open(portname, O_RDWR | O_NONBLOCK); 
-  if(tty_fd < 0){
-    std::stringstream ss;
-    ss << "Impossible to read portname=" << portname;    
-    Dart_Handle error = NewDartExceptionWithMessage("dart:io", "FileSystemException", ss.str().c_str());
-    if (Dart_IsError(error)) Dart_PropagateError(error);
-    Dart_ThrowException(error);     
+  int tty_fd = open(portname, O_RDWR | O_NONBLOCK);
+  if(tty_fd > 0) {
+    cfsetospeed(&tio, baudrate);
+    cfsetispeed(&tio, baudrate);
+    tcsetattr(tty_fd, TCSANOW, &tio);
   }
+  return tty_fd;
+}
 
-  cfsetospeed(&tio, baudrate);
-  cfsetispeed(&tio, baudrate);
-  tcsetattr(tty_fd, TCSANOW, &tio);
-   
-  Dart_SetReturnValue(arguments, HandleError(Dart_NewInteger(tty_fd)));
+void closeAsync(int64_t tty_fd){
+  close(tty_fd);
+}
+
+int sendAsync(int64_t tty_fd, const char* data){
+  return write(tty_fd, data, strlen(data));
+}
+
+// TODO maybe check type
+//   result.type = Dart_CObject_kNull;
+void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message){
+ Dart_Port reply_port_id = message->value.as_array.values[0]->value.as_send_port;
+ Dart_CObject result;
+ int argc = message->value.as_array.length - 1;                        \
+ Dart_CObject** argv = message->value.as_array.values + 1;
+ char *name = argv[0]->value.as_string;
+ argv++;
+ argc--;
+ // TODO replace by switch
+ if (strcmp("open", name) == 0) {
+   //Dart_CObject* param0 = message->value.as_array.values[0];
+   //Dart_CObject* param1 = message->value.as_array.values[1];
+   const char* portname = argv[0]->value.as_string;
+   int64_t baudrate_speed = argv[1]->value.as_int64;
+
+   int64_t tty_fd = openAsync(portname, baudrate_speed);
+
+   result.type = Dart_CObject_kInt64;
+   result.value.as_int64 = tty_fd;
+ } else  if (strcmp("close", name) == 0) {
+   int64_t tty_fd = argv[0]->value.as_int64;
+
+   closeAsync(tty_fd);
+
+   result.type = Dart_CObject_kBool;
+   result.value.as_bool = true;
+ } else  if (strcmp("send", name) == 0) {
+   int64_t tty_fd = argv[0]->value.as_int64;
+   const char* data = argv[1]->value.as_string;
+
+   int value = sendAsync(tty_fd, data);
+
+   printf("value write %d", value);
+
+   result.type = Dart_CObject_kInt64;
+   result.value.as_int64 = value;
+ } else  if (strcmp("read", name) == 0) {
+
+ } else {
+    // TODO
+    printf("ERROR :Unknow function\n");
+ }
+ Dart_PostCObject(reply_port_id, &result);
+}
+
+void serialPortServicePort(Dart_NativeArguments arguments) {
+  Dart_EnterScope();
+  Dart_SetReturnValue(arguments, Dart_Null());
+  Dart_Port service_port = Dart_NewNativePort("SerialPortServicePort", wrappedSerialPortServicePort, true);
+  if (service_port != ILLEGAL_PORT) {
+    Dart_Handle send_port = HandleError(Dart_NewSendPort(service_port));
+    Dart_SetReturnValue(arguments, send_port);
+  }
   Dart_ExitScope();
 }
 
-void closeSync(Dart_NativeArguments arguments){
-  int64_t tty_fd;
-
-  Dart_Handle tty_fd_object = HandleError(Dart_GetNativeArgument(arguments, 0));
-  HandleError(Dart_IntegerToInt64(tty_fd_object, &tty_fd));
-
-  close(tty_fd);
-}
 
 DART_EXPORT Dart_Handle serial_port_Init(Dart_Handle parent_library) {
   if (Dart_IsError(parent_library)) { return parent_library; }
@@ -118,8 +152,7 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {
   const char* cname;
   HandleError(Dart_StringToCString(name, &cname));
 
-  if (strcmp("closeSync", cname) == 0) result = closeSync;
-  if (strcmp("openSync", cname) == 0) result = openSync;
+  if (strcmp("serialPortServicePort", cname) == 0) result = serialPortServicePort;
 
   Dart_ExitScope();
   return result;
