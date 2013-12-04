@@ -20,7 +20,7 @@ class SerialPort {
   // TODO fail state ?
   int _state;
 
-  int _ttyFd;
+  int _ttyFd = -1;
 
   SerialPort(this.portname, {this.baudrate : 9600}){
     _state = CONNECTING;
@@ -39,6 +39,7 @@ class SerialPort {
       replyPort.close();
       if (result != null) {
         // TODO return value ?
+        _ttyFd = -1;
         _state = CLOSED;
         completer.complete(true);
       } else {
@@ -79,6 +80,7 @@ class SerialPort {
       replyPort.close();
       if (result != null) {
         if(result >= 0){
+          _ttyFd = result;
           _state = OPEN;
           completer.complete(true);
         } else {

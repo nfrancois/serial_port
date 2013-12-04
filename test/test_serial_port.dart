@@ -3,12 +3,18 @@ library test_serial_port;
 import 'package:unittest/unittest.dart';
 import 'package:serial_port/serial_port.dart';
 import 'dart:io';
+import 'dart:math';
 
 void main() {
   var dummySerialPort;
+  var random = new Random();
   group('Serial port', () {
-    setUp(() => dummySerialPort = new File("dummySerialPort.tmp")..createSync());
-    tearDown(() => dummySerialPort.deleteSync());
+    setUp(() {
+      //dummySerialPort = new File("dummySerialPort-${random.nextInt(999)}.tmp").createSync();
+      dummySerialPort = new File("dummySerialPort.tmp");
+      return dummySerialPort.create();
+    });
+    tearDown(() => dummySerialPort.delete());
 
 
     test('Just open', () {
@@ -19,20 +25,17 @@ void main() {
       });
 	  });
 
-  /*
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
                    .then((success) =>  expect(success, isTrue));
     });
-     */
 
     test('Defaut baudrate 9600', () {
       var serial =  new SerialPort(dummySerialPort.path);
       expect(serial.baudrate, 9600);
-    });    
+    });
 
-    /*
     test('Just write', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.send("Hello"))
@@ -41,14 +44,13 @@ void main() {
                       serial.close();
                  });
     });
-    */
 
     test('Fail with unkwnon portname', (){
       var serial = new SerialPort("notExist");
       serial.open().catchError((error) => expect(error, "Cannot open portname=notExist"));
     });
 
-   test('Fail with unkwnon baudrate', (){
+    test('Fail with unkwnon baudrate', (){
       try {
         new SerialPort(dummySerialPort.path, baudrate: 1);
       } catch(e){
@@ -56,6 +58,7 @@ void main() {
         expect(e.message, "Unknown baudrate speed=1");
       }
     });
+
 
   });
 
