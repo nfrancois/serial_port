@@ -6,24 +6,15 @@ import 'dart-ext:serial_port';
 
 class SerialPort {
 
-  // TODO : Review state
-  static const int CONNECTING = 0;
-  static const int OPEN = 1;
-  static const int CLOSED = 3;
-  static const int CLOSING = 2;
 
   static const List<int> AUTHORIZED_BAUDATE_SPEED =  const [50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 4000000];
 
   final String portname;
   final int baudrate;
 
-  // TODO fail state ?
-  int _state;
-
   int _ttyFd = -1;
 
   SerialPort(this.portname, {this.baudrate : 9600}){
-    _state = CONNECTING;
     if(!AUTHORIZED_BAUDATE_SPEED.contains(baudrate)){
       throw new ArgumentError("Unknown baudrate speed=$baudrate");
     }
@@ -31,7 +22,6 @@ class SerialPort {
 
   Future<bool> close(){
     // TODO check OPEN
-    _state = CLOSING;
     var completer = new Completer<bool>();
     var replyPort = new RawReceivePort();
     _servicePort.send([replyPort.sendPort, "close", _ttyFd]);
@@ -40,7 +30,6 @@ class SerialPort {
       if (result != null) {
         // TODO return value ?
         _ttyFd = -1;
-        _state = CLOSED;
         completer.complete(true);
       } else {
         completer.completeError("Unexpected error");
@@ -51,7 +40,6 @@ class SerialPort {
 
   // TODO rename sendString
   // TODO send with List<int>
-  // TODO Future
   Future<bool> send(String data){
     // TODO check OPEN
     var completer = new Completer<bool>();
@@ -81,8 +69,7 @@ class SerialPort {
       if (result != null) {
         if(result >= 0){
           _ttyFd = result;
-          _state = OPEN;
-          completer.complete(true);
+           completer.complete(true);
         } else {
           completer.completeError("Cannot open portname=$portname");
         }
