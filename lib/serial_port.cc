@@ -99,6 +99,7 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
  } else  if (strcmp("close", name) == 0) {
    int64_t tty_fd = argv[0]->value.as_int64;
 
+   printf("Close \n");
    closeAsync(tty_fd);
 
    result.type = Dart_CObject_kBool;
@@ -108,6 +109,8 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
    const char* data = argv[1]->value.as_string;
 
    int value = sendAsync(tty_fd, data);
+
+   printf("value write %d", value);
 
    result.type = Dart_CObject_kInt64;
    result.value.as_int64 = value;

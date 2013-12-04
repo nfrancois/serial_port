@@ -6,6 +6,7 @@ import 'dart-ext:serial_port';
 
 class SerialPort {
 
+  // TODO : Review state
   static const int CONNECTING = 0;
   static const int OPEN = 1;
   static const int CLOSED = 3;
@@ -38,7 +39,6 @@ class SerialPort {
       replyPort.close();
       if (result != null) {
         // TODO return value ?
-
         _state = CLOSED;
         completer.complete(true);
       } else {
@@ -51,24 +51,24 @@ class SerialPort {
   // TODO rename sendString
   // TODO send with List<int>
   // TODO Future
-  void send(String data){
+  Future<bool> send(String data){
     // TODO check OPEN
-    _state = CLOSING;
+    var completer = new Completer<bool>();
     var replyPort = new RawReceivePort();
-    var args = new List(4);
-    args[0] = replyPort.sendPort;
-    args[1] = "send";
-    args[2] = _ttyFd;
-    args[3] = data;
-    _servicePort.send(args);
+    _servicePort.send([replyPort.sendPort, "send", _ttyFd, data]);
     replyPort.handler = (result) {
       replyPort.close();
       if (result != null) {
-        if(result < 0){
-          //_errorControllers.forEach((controller) => controller.add("Cannot write data=$data on serial port $nameport"));
+        if(result >= 0){
+          completer.complete(true);
+        } else {
+          completer.completeError("Impossible to write.");
         }
+      } else {
+        completer.completeError("Unexpected error");
       }
     };
+    return completer.future;
   }
 
   Future<bool> open() {
