@@ -25,16 +25,12 @@ class SerialPort {
 
   Future<bool> close(){
     // TODO check OPEN
-    if(_readPort != null){
-      print("*** close read port");
-      _readPort.close();
-    }
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, "close", _ttyFd]);
     replyPort.first.then((result) {
       if (result != null) {
-          print("close");
+          _ttyFd = -1;
           completer.complete(true);
       } else {
         completer.completeError("Unexpected error when closing");
@@ -67,12 +63,12 @@ class SerialPort {
   Future<bool> open() {
     var replyPort = new ReceivePort();
     var completer = new Completer<bool>();
-    _servicePort.send([replyPort.sendPort, "open", portname, baudrate]);
+    _servicePort.send([replyPort.sendPort, "open", portname, baudrate, 256]);
     replyPort.first.then((result) {
       if (result != null) {
         if(result >= 0){
           _ttyFd = result;
-          _startReading();
+          _read();
            completer.complete(true);
         } else {
           completer.completeError("Cannot open portname=$portname");
@@ -90,13 +86,26 @@ class SerialPort {
     return controller.stream;
   }
 
-  void _startReading(){
-    print("start read");
+  void _read(){
     _readPort = new RawReceivePort();
     _servicePort.send([_readPort.sendPort, "read", _ttyFd]);
     _readPort.handler = (result) {
-      print(result);
+      _closeReadPort();
+      if(result != null){
+        _onReadControllers.forEach((c) => c.add(new String.fromCharCodes(result)));
+      }
+      // Continue to read
+      if(_ttyFd != -1){
+        _read();
+      }
     };
+  }
+
+  void _closeReadPort(){
+    if(_readPort != null){
+      _readPort.close();
+      _readPort = null;
+    }
   }
 
    // Communication with native part

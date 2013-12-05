@@ -24,7 +24,7 @@ void main() {
         serial.close();
       });
 	  });
-/*
+
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
@@ -59,7 +59,6 @@ void main() {
       }
     });
 
-       */
   });
 
 

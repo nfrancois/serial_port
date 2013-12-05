@@ -75,32 +75,6 @@ int sendAsync(int64_t tty_fd, const char* data){
   return write(tty_fd, data, strlen(data));
 }
 
-void startReading(Dart_Port reply_port_id, int64_t tty_fd, int64_t buffer_size){
-  // TODO buffer size
-  //int buffer_size = 1;
-  Dart_CObject result;
-  //result.type = Dart_CObject_kArray;
-  result.type = Dart_CObject_kString;
-  fd_set readfs;
-  char buffer[buffer_size];
-  while (1){
-    FD_ZERO(&readfs);
-    FD_SET(tty_fd, &readfs);
-    select(tty_fd+1, &readfs, NULL, NULL, NULL);
-    if(read(tty_fd,&buffer,buffer_size)>0){
-      // Send data via open port
-      //Dart_CObject *bufferPtr[buffer_size];
-      //bufferPtr[0] = &buffer[1];
-      //result.type = Dart_CObject_kArray;
-      //result.value.as_array.length = buffer_size;
-      //result.value.as_array.values = buffer;
-      result.value.as_string = buffer;
-      Dart_PostCObject(reply_port_id, &result);
-    }
-  }
-}
-
-
 // TODO maybe check type
 //   result.type = Dart_CObject_kNull;
 void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message){
@@ -139,10 +113,32 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
    result.value.as_int64 = value;
  } else  if (strcmp("read", name) == 0) {
    int64_t tty_fd = argv[0]->value.as_int64;
-   // TODO arg buffer_size
-   int64_t buffer_size = 1;
+   int64_t buffer_size = argv[1]->value.as_int64;
+   int8_t buffer[buffer_size];
+   fd_set readfs;
+   FD_ZERO(&readfs);
+   FD_SET(tty_fd, &readfs);
 
-    startReading(reply_port_id, tty_fd, buffer_size);
+   select(tty_fd+1, &readfs, NULL, NULL, NULL);
+   // TODO add delay ?
+   int n =  read(tty_fd, &buffer, sizeof(buffer));
+
+   if(n > 0){
+     result.type = Dart_CObject_kArray;
+     result.value.as_array.length = n;
+
+     for(int i=0; i<n; i++){
+       Dart_CObject* v = (Dart_CObject*) malloc(sizeof(Dart_CObject_kInt32));
+       v->type = Dart_CObject_kInt32;
+       v->value.as_int32 = buffer[i];
+       result.value.as_array.values[i] = v;
+     }
+
+    } else {
+      result.type = Dart_CObject_kNull;
+    }
+
+
  } else {
     // TODO
     printf("ERROR :Unknow function\n");
