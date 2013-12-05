@@ -12,6 +12,9 @@ class SerialPort {
   final String portname;
   final int baudrate;
 
+  final List<StreamController> _onReadControllers = [];
+  RawReceivePort _readPort  = null;
+
   int _ttyFd = -1;
 
   SerialPort(this.portname, {this.baudrate : 9600}){
@@ -22,11 +25,16 @@ class SerialPort {
 
   Future<bool> close(){
     // TODO check OPEN
+    if(_readPort != null){
+      print("*** close read port");
+      _readPort.close();
+    }
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, "close", _ttyFd]);
     replyPort.first.then((result) {
       if (result != null) {
+          print("close");
           completer.complete(true);
       } else {
         completer.completeError("Unexpected error when closing");
@@ -64,6 +72,7 @@ class SerialPort {
       if (result != null) {
         if(result >= 0){
           _ttyFd = result;
+          _startReading();
            completer.complete(true);
         } else {
           completer.completeError("Cannot open portname=$portname");
@@ -73,6 +82,21 @@ class SerialPort {
       }
     });
     return completer.future;
+  }
+
+  Stream<String> get onRead {
+    StreamController<String> controller = new StreamController();
+    _onReadControllers.add(controller);
+    return controller.stream;
+  }
+
+  void _startReading(){
+    print("start read");
+    _readPort = new RawReceivePort();
+    _servicePort.send([_readPort.sendPort, "read", _ttyFd]);
+    _readPort.handler = (result) {
+      print(result);
+    };
   }
 
    // Communication with native part

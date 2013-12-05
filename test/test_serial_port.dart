@@ -24,7 +24,7 @@ void main() {
         serial.close();
       });
 	  });
-
+/*
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
@@ -39,10 +39,10 @@ void main() {
     test('Just write', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.send("Hello"))
-                 .then((success) {
+                   .then((success) {
                       expect(success, isTrue);
                       serial.close();
-                 });
+                   });
     });
 
     test('Fail with unkwnon portname', (){
@@ -59,7 +59,7 @@ void main() {
       }
     });
 
-
+       */
   });
 
 
