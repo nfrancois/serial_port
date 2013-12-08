@@ -50,12 +50,12 @@ class SerialPort {
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _CLOSE_METHOD, _ttyFd]);
-    replyPort.first.then((result) {
-      if (result != null) {
-          _ttyFd = -1;
-          completer.complete(true);
+    replyPort.first.then((List result) {
+      if (result[1].isEmpty) {
+        _ttyFd = -1;
+        completer.complete(true);
       } else {
-        completer.completeError("Unexpected error when closing");
+        completer.completeError("Cannot close $portname : ${result[1]}");
       }
     });
     return completer.future;
@@ -69,14 +69,10 @@ class SerialPort {
     var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data]);
     replyPort.first.then((result) {
-      if (result != null) {
-        if(result >= 0){
-          completer.complete(true);
-        } else {
-          completer.completeError("Impossible to write.");
-        }
+      if (result[1].isEmpty) {
+        completer.complete(true);
       } else {
-        completer.completeError("Unexpected error when writing");
+        completer.completeError("Cannot write in $portname : ${result[1]}");
       }
     });
     return completer.future;

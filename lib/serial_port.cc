@@ -217,8 +217,11 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
 
    int value = sendAsync(tty_fd, data);
 
-   result.type = Dart_CObject_kInt64;
-   result.value.as_int64 = value;
+   Dart_CObject dart_result;
+   dart_result.type = Dart_CObject_kInt64;
+   dart_result.value.as_int64 = value;
+   result.value.as_array.values[0] = &dart_result;
+
   } else if(method_code == READ) {
    int64_t tty_fd = argv[0]->value.as_int64;
    int buffer_size = (int) argv[1]->value.as_int64;
@@ -229,22 +232,27 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
    select(tty_fd+1, &readfs, NULL, NULL, NULL);
    int n =  read(tty_fd, &buffer, sizeof(buffer));
    if(n > 0){
-     result.type = Dart_CObject_kArray;
-     result.value.as_array.length = n;
+
+     Dart_CObject dart_result;
+     dart_result.type = Dart_CObject_kArray;
+     dart_result.value.as_array.length = n;
 
      for(int i=0; i<n; i++){
+       // TODO without pointer ?
        Dart_CObject* v = (Dart_CObject*) malloc(sizeof(Dart_CObject_kInt32));
        v->type = Dart_CObject_kInt32;
        v->value.as_int32 = buffer[i];
-       result.value.as_array.values[i] = v;
+       dart_result.value.as_array.values[i] = v;
      }
+
+     result.value.as_array.values[0] = &dart_result;
 
     } else {
       result.type = Dart_CObject_kNull;
     }
   } else {
-    printf("ERROR :Unknow function\n");
-    result.type = Dart_CObject_kNull;
+    result.value.as_array.values[0] = &dart_null;
+    error_message->value.as_string = (char*) "Unknow method";
   }
   Dart_PostCObject(reply_port_id, &result);
 }
