@@ -6,11 +6,10 @@ import 'dart:io';
 import 'dart:math';
 
 void main() {
-  var dummySerialPort;
-  var random = new Random();
+  File dummySerialPort;
+  Random random = new Random();
   group('Serial port', () {
     setUp(() {
-      //dummySerialPort = new File("dummySerialPort-${random.nextInt(999)}.tmp").createSync();
       dummySerialPort = new File("dummySerialPort.tmp");
       return dummySerialPort.create();
     });
@@ -31,11 +30,6 @@ void main() {
                    .then((success) =>  expect(success, isTrue));
     });
 
-    test('Defaut baudrate 9600', () {
-      var serial =  new SerialPort(dummySerialPort.path);
-      expect(serial.baudrate, 9600);
-    });
-
     test('Just write', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.write("Hello"))
@@ -43,6 +37,11 @@ void main() {
                       expect(success, isTrue);
                       serial.close();
                    });
+    });
+
+    test('Defaut baudrate 9600', () {
+      var serial =  new SerialPort(dummySerialPort.path);
+      expect(serial.baudrate, 9600);
     });
 
     test('Fail with unkwnon portname', (){
