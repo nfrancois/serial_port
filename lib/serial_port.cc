@@ -204,8 +204,11 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
    // TODO code close
    closeAsync(tty_fd);
 
-   result.type = Dart_CObject_kBool;
-   result.value.as_bool = true;
+   Dart_CObject dart_result;
+   dart_result.type = Dart_CObject_kBool;
+   dart_result.value.as_bool = true;
+   result.value.as_array.values[0] = &dart_result;
+
   } else if(method_code == WRITE) {
    int64_t tty_fd = argv[0]->value.as_int64;
 

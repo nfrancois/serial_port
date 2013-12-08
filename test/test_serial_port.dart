@@ -15,7 +15,6 @@ void main() {
     });
     tearDown(() => dummySerialPort.delete());
 
-
     test('Just open', () {
       var serial =  new SerialPort(dummySerialPort.path, baudrate: 9600);
       serial.open().then((success) {
@@ -23,13 +22,14 @@ void main() {
         serial.close();
       });
 	  });
-/*
+
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
                    .then((success) =>  expect(success, isTrue));
     });
 
+/*
     test('Just write', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.write("Hello"))
@@ -45,8 +45,7 @@ void main() {
       expect(serial.baudrate, 9600);
     });
 
-
-    test('Fail with unkwnon portname', (){
+     test('Fail with unkwnon portname', (){
       var serial = new SerialPort("notExist");
       serial.open().catchError((error) => expect(error, "Cannot open notExist : Invalid access"));
     });
