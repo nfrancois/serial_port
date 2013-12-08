@@ -26,6 +26,27 @@ class SerialPort {
     }
   }
 
+  Future<bool> open() {
+    var replyPort = new ReceivePort();
+    var completer = new Completer<bool>();
+    _servicePort.send([replyPort.sendPort, "open", portname, baudrate, 256]);
+    replyPort.first.then((result) {
+      if (result != null) {
+        if(result >= 0){
+          _ttyFd = result;
+          _read();
+          completer.complete(true);
+        } else {
+          // TODO better message based on result
+          completer.completeError("Cannot open portname=$portname");
+        }
+      } else {
+        completer.completeError("Unexpected error when opening");
+      }
+    });
+    return completer.future;
+  }
+
   Future<bool> close(){
     // TODO check OPEN
     var completer = new Completer<bool>();
@@ -58,26 +79,6 @@ class SerialPort {
         }
       } else {
         completer.completeError("Unexpected error when writing");
-      }
-    });
-    return completer.future;
-  }
-
-  Future<bool> open() {
-    var replyPort = new ReceivePort();
-    var completer = new Completer<bool>();
-    _servicePort.send([replyPort.sendPort, "open", portname, baudrate, 256]);
-    replyPort.first.then((result) {
-      if (result != null) {
-        if(result >= 0){
-          _ttyFd = result;
-          _read();
-           completer.complete(true);
-        } else {
-          completer.completeError("Cannot open portname=$portname");
-        }
-      } else {
-        completer.completeError("Unexpected error when opening");
       }
     });
     return completer.future;
