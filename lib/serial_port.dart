@@ -11,6 +11,7 @@ class SerialPort {
 
   final String portname;
   final int baudrate;
+  final int databits;
 
   final List<StreamController> _onReadControllers = [];
   RawReceivePort _readPort  = null;
@@ -20,7 +21,7 @@ class SerialPort {
   final StringBuffer _lineBuffer = new StringBuffer();
 
 
-  SerialPort(this.portname, {this.baudrate : 9600}){
+  SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8}){
     if(!AUTHORIZED_BAUDATE_SPEED.contains(baudrate)){
       throw new ArgumentError("Unknown baudrate speed=$baudrate");
     }
@@ -29,7 +30,7 @@ class SerialPort {
   Future<bool> open() {
     var replyPort = new ReceivePort();
     var completer = new Completer<bool>();
-    _servicePort.send([replyPort.sendPort, "open", portname, baudrate, 256]);
+    _servicePort.send([replyPort.sendPort, "open", portname, baudrate, databits]);
     replyPort.first.then((result) {
       if (result != null) {
         if(result >= 0){
@@ -94,7 +95,7 @@ class SerialPort {
 
   void _read(){
     _readPort = new RawReceivePort();
-    _servicePort.send([_readPort.sendPort, "read", _ttyFd]);
+    _servicePort.send([_readPort.sendPort, "read", _ttyFd, 256]);
     _readPort.handler = (List<int> result) {
       _closeReadPort();
       if(result != null){

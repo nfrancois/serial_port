@@ -95,13 +95,23 @@ int selectBaudrate(int baudrate_speed){
   }
 }
 
-int64_t openAsync(const char* portname, speed_t baudrate){
+int selectDataBits(int dataBits) {
+  switch (dataBits) {
+    case 5: return CS5;
+    case 6: return CS6;
+    case 7: return CS7;
+    case 8: return CS8;
+    default: return -1;
+  }
+}
+
+int64_t openAsync(const char* portname, speed_t baudrate, int databits){
   // Open serial port
   struct termios tio;
   memset(&tio, 0, sizeof(tio));
   tio.c_iflag=0;
   tio.c_oflag=0;
-  tio.c_cflag=CS8|CREAD|CLOCAL;
+  tio.c_cflag= databits | CREAD | CLOCAL;
   tio.c_lflag=0;
   tio.c_cc[VMIN]=1;
   tio.c_cc[VTIME]=5;
@@ -115,8 +125,8 @@ int64_t openAsync(const char* portname, speed_t baudrate){
   return tty_fd;
 }
 
-void closeAsync(int64_t tty_fd){
-  close(tty_fd);
+int closeAsync(int64_t tty_fd){
+  return close(tty_fd);
 }
 
 int sendAsync(int64_t tty_fd, const char* data){
@@ -128,22 +138,33 @@ int sendAsync(int64_t tty_fd, const char* data){
 void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message){
  Dart_Port reply_port_id = message->value.as_array.values[0]->value.as_send_port;
  Dart_CObject result;
- int argc = message->value.as_array.length - 1;                        \
+ int argc = message->value.as_array.length - 1;
  Dart_CObject** argv = message->value.as_array.values + 1;
  char *name = argv[0]->value.as_string;
  argv++;
  argc--;
+ // TODO return a array : [result, "message"]
  // TODO replace by switch
+ // TODO check args nb
+ // TODO method return a Dart_CObject result
  if (strcmp("open", name) == 0) {
    //Dart_CObject* param0 = message->value.as_array.values[0];
    //Dart_CObject* param1 = message->value.as_array.values[1];
    const char* portname = argv[0]->value.as_string;
    int64_t baudrate_speed = argv[1]->value.as_int64;
+   int64_t databits_nb = argv[2]->value.as_int64;
    int baudrate = selectBaudrate(baudrate_speed);
+   int databits = selectDataBits(databits_nb);
    if(baudrate == -1){
      result.type = Dart_CObject_kNull;
+     printf("Invalid baudrate");
+     // TODO error invalid baudrate
+   } else if(databits == -1) {
+     result.type = Dart_CObject_kNull;
+     printf("Invalid databits");
+     // TODO error invalid databits
    } else {
-     int64_t tty_fd = openAsync(portname, baudrate);
+     int64_t tty_fd = openAsync(portname, baudrate, databits);
      result.type = Dart_CObject_kInt64;
      result.value.as_int64 = tty_fd;
    }
@@ -151,6 +172,7 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
  } else  if (strcmp("close", name) == 0) {
    int64_t tty_fd = argv[0]->value.as_int64;
 
+   // TODO code close
    closeAsync(tty_fd);
 
    result.type = Dart_CObject_kBool;
@@ -165,16 +187,13 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
    result.value.as_int64 = value;
  } else  if (strcmp("read", name) == 0) {
    int64_t tty_fd = argv[0]->value.as_int64;
-   int64_t buffer_size = argv[1]->value.as_int64;
+   int buffer_size = (int) argv[1]->value.as_int64;
    int8_t buffer[buffer_size];
    fd_set readfs;
    FD_ZERO(&readfs);
    FD_SET(tty_fd, &readfs);
-
    select(tty_fd+1, &readfs, NULL, NULL, NULL);
-   // TODO add delay ?
    int n =  read(tty_fd, &buffer, sizeof(buffer));
-
    if(n > 0){
      result.type = Dart_CObject_kArray;
      result.value.as_array.length = n;
