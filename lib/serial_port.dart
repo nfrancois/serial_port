@@ -6,7 +6,7 @@ import 'dart-ext:serial_port';
 
 class SerialPort {
 
-
+  static const int _EOL = 10;
   static const List<int> AUTHORIZED_BAUDATE_SPEED =  const [50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 4000000];
 
   final String portname;
@@ -16,6 +16,9 @@ class SerialPort {
   RawReceivePort _readPort  = null;
 
   int _ttyFd = -1;
+
+  final StringBuffer _lineBuffer = new StringBuffer();
+
 
   SerialPort(this.portname, {this.baudrate : 9600}){
     if(!AUTHORIZED_BAUDATE_SPEED.contains(baudrate)){
@@ -80,6 +83,8 @@ class SerialPort {
     return completer.future;
   }
 
+  // TODO Stream a List<int>
+
   Stream<String> get onRead {
     StreamController<String> controller = new StreamController();
     _onReadControllers.add(controller);
@@ -89,10 +94,16 @@ class SerialPort {
   void _read(){
     _readPort = new RawReceivePort();
     _servicePort.send([_readPort.sendPort, "read", _ttyFd]);
-    _readPort.handler = (result) {
+    _readPort.handler = (List<int> result) {
       _closeReadPort();
       if(result != null){
-        _onReadControllers.forEach((c) => c.add(new String.fromCharCodes(result)));
+        result.forEach((byte) {
+          _lineBuffer.write(new String.fromCharCode(byte));
+          if(byte == _EOL){
+            _onReadControllers.forEach((c) => c.add(_lineBuffer.toString()));
+            _lineBuffer.clear();
+          }
+        });
       }
       // Continue to read
       if(_ttyFd != -1){
