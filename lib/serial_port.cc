@@ -104,7 +104,7 @@ int64_t openAsync(const char* portname, int64_t baudrate_speed){
   tio.c_cc[VMIN]=1;
   tio.c_cc[VTIME]=5;
 
-  int tty_fd = open(portname, O_RDWR | O_NONBLOCK);
+  int tty_fd = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
   if(tty_fd > 0) {
     cfsetospeed(&tio, baudrate);
     cfsetispeed(&tio, baudrate);
