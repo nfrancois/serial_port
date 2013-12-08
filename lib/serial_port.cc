@@ -21,80 +21,82 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc);
 
 Dart_Handle HandleError(Dart_Handle handle);
 
-int64_t openAsync(const char* portname, int64_t baudrate_speed){
-  // Open serial port
-  speed_t baudrate;
 
+int selectBaudrate(int baudrate_speed){
   switch(baudrate_speed){
     // TODO baudrate 0 ? B0
-    case 50: baudrate = B50; break;
-    case 75: baudrate = B75; break;
-    case 110: baudrate = B110; break;
-    case 134: baudrate = B134; break;
-    case 150: baudrate = B150; break;
-    case 200: baudrate = B200; break;
-    case 300: baudrate = B300; break;
-    case 600: baudrate = B600; break;
-    case 1200: baudrate = B1200; break;
-    case 1800: baudrate = B1800; break;
-    case 2400: baudrate = B2400; break;
-    case 4800: baudrate = B4800; break;
-    case 9600: baudrate = B9600; break;
-    case 19200: baudrate = B19200; break;
-    case 38400: baudrate = B38400; break;
-    case 57600: baudrate = B57600; break;
-    case 115200: baudrate = B115200; break;
-    case 230400: baudrate = B230400; break;
+    case 50: return B50; break;
+    case 75: return B75; break;
+    case 110: return B110; break;
+    case 134: return B134; break;
+    case 150: return B150; break;
+    case 200: return B200; break;
+    case 300: return B300; break;
+    case 600: return B600; break;
+    case 1200: return B1200; break;
+    case 1800: return B1800; break;
+    case 2400: return B2400; break;
+    case 4800: return B4800; break;
+    case 9600: return B9600; break;
+    case 19200: return B19200; break;
+    case 38400: return B38400; break;
+    case 57600: return B57600; break;
+    case 115200: return B115200; break;
+    case 230400: return B230400; break;
     #ifdef B460800
-    case 460800: baudrate = B460800;break;
+    case 460800: return B460800;break;
     #endif
     #ifdef B500000
-    case 500000: baudrate = B500000; break;
+    case 500000: return B500000; break;
     #endif
     #ifdef B576000
-    case 576000: baudrate = B576000; break;
+    case 576000: return B576000; break;
     #endif
     #ifdef B921600
-    case 921600: baudrate = B921600; break;
+    case 921600: return B921600; break;
     #endif
     #ifdef B1000000
-    case 1000000: baudrate = B1000000; break;
+    case 1000000: return B1000000; break;
     #endif
     #ifdef B1152000
-    case 1152000: baudrate = B1152000; break;
+    case 1152000: return B1152000; break;
     #endif
     #ifdef B1500000
-    case 1500000: baudrate = B1500000; break;
+    case 1500000: return B1500000; break;
     #endif
     #ifdef B2000000
-    case 2000000:  baudrate = B2000000; break;
+    case 2000000: return B2000000; break;
     #endif
     #ifdef B2500000
-    case 2500000: baudrate = B2500000; break;
+    case 2500000: return B2500000; break;
     #endif
     #ifdef B3000000
-    case 3000000: baudrate = B3000000; break;
+    case 3000000: return B3000000; break;
     #endif
     #ifdef B3500000
-    case 3500000: baudrate = B3500000; break;
+    case 3500000: return B3500000; break;
     #endif
     #ifdef B4000000
-    case 4000000: baudrate = B4000000; break;
+    case 4000000: return B4000000; break;
     #endif
     #ifdef B7200
-    case 7200: baudrate = B7200; break;
+    case 7200: return B7200; break;
     #endif
     #ifdef B14400
-    case 14400: baudrate = B14400; break;
+    case 14400: return B14400; break;
     #endif
     #ifdef B28800
-    case 28800: baudrate = B28800; break;
+    case 28800: return B28800; break;
     #endif
     #ifdef B76800
-    case 76800: baudrate = B76800; break;
+    case 76800: return B76800; break;
     #endif
+    default: return -1;
   }
+}
 
+int64_t openAsync(const char* portname, speed_t baudrate){
+  // Open serial port
   struct termios tio;
   memset(&tio, 0, sizeof(tio));
   tio.c_iflag=0;
@@ -137,11 +139,15 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
    //Dart_CObject* param1 = message->value.as_array.values[1];
    const char* portname = argv[0]->value.as_string;
    int64_t baudrate_speed = argv[1]->value.as_int64;
+   int baudrate = selectBaudrate(baudrate_speed);
+   if(baudrate == -1){
+     result.type = Dart_CObject_kNull;
+   } else {
+     int64_t tty_fd = openAsync(portname, baudrate);
+     result.type = Dart_CObject_kInt64;
+     result.value.as_int64 = tty_fd;
+   }
 
-   int64_t tty_fd = openAsync(portname, baudrate_speed);
-
-   result.type = Dart_CObject_kInt64;
-   result.value.as_int64 = tty_fd;
  } else  if (strcmp("close", name) == 0) {
    int64_t tty_fd = argv[0]->value.as_int64;
 
