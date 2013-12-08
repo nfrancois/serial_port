@@ -13,9 +13,7 @@ class SerialPort {
   static const int _READ_METHOD = 3;
   static const int _WRITE_METHOD = 4;
 
-
   static const int _EOL = 10;
-  static const List<int> AUTHORIZED_BAUDATE_SPEED =  const [50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 4000000];
 
   final String portname;
   final int baudrate;
@@ -29,28 +27,19 @@ class SerialPort {
   final StringBuffer _lineBuffer = new StringBuffer();
 
 
-  SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8}){
-    if(!AUTHORIZED_BAUDATE_SPEED.contains(baudrate)){
-      throw new ArgumentError("Unknown baudrate speed=$baudrate");
-    }
-  }
+  SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8});
 
   Future<bool> open() {
     var replyPort = new ReceivePort();
     var completer = new Completer<bool>();
     _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portname, baudrate, databits]);
-    replyPort.first.then((result) {
-      if (result != null) {
-        if(result >= 0){
-          _ttyFd = result;
-          _read();
-          completer.complete(true);
-        } else {
-          // TODO better message based on result
-          completer.completeError("Cannot open portname=$portname");
-        }
+    replyPort.first.then((List result) {
+      if (result[1].isEmpty) {
+        _ttyFd = result[0];
+        _read();
+        completer.complete(true);
       } else {
-        completer.completeError("Unexpected error when opening");
+        completer.completeError("Cannot open $portname : ${result[1]}");
       }
     });
     return completer.future;

@@ -23,7 +23,7 @@ void main() {
         serial.close();
       });
 	  });
-
+/*
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
@@ -38,24 +38,22 @@ void main() {
                       serial.close();
                    });
     });
+    */
 
     test('Defaut baudrate 9600', () {
       var serial =  new SerialPort(dummySerialPort.path);
       expect(serial.baudrate, 9600);
     });
 
+
     test('Fail with unkwnon portname', (){
       var serial = new SerialPort("notExist");
-      serial.open().catchError((error) => expect(error, "Cannot open portname=notExist"));
+      serial.open().catchError((error) => expect(error, "Cannot open notExist : Invalid access"));
     });
 
     test('Fail with unkwnon baudrate', (){
-      try {
-        new SerialPort(dummySerialPort.path, baudrate: 1);
-      } catch(e){
-        expect(e, isArgumentError);
-        expect(e.message, "Unknown baudrate speed=1");
-      }
+      var serial = new SerialPort(dummySerialPort.path, baudrate: 1);
+      serial.open().catchError((error) => expect(error, "Cannot open dummySerialPort.tmp : Invalid baudrate"));
     });
 
   });

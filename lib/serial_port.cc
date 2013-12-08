@@ -10,6 +10,7 @@
 #include "include/dart_api.h"
 #include "include/dart_native_api.h"
 
+
 Dart_Handle NewDartExceptionWithMessage(const char* library_url,
                                         const char* exception_name,
                                         const char* message);
@@ -145,7 +146,19 @@ int sendAsync(int64_t tty_fd, const char* data){
 //   result.type = Dart_CObject_kNull;
 void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message){
  Dart_Port reply_port_id = message->value.as_array.values[0]->value.as_send_port;
+
  Dart_CObject result;
+ result.type = Dart_CObject_kArray;
+ result.value.as_array.length = 2;
+
+ Dart_CObject* error_message = (Dart_CObject*) malloc(sizeof(Dart_CObject_kString));
+ error_message->type = Dart_CObject_kString;
+ error_message->value.as_string =  (char*) "";
+ result.value.as_array.values[1] = error_message;
+
+ Dart_CObject dart_null;
+ dart_null.type = Dart_CObject_kNull;
+
  int argc = message->value.as_array.length - 1;
  Dart_CObject** argv = message->value.as_array.values + 1;
  int64_t method_code = (int) argv[0]->value.as_int64;
@@ -164,18 +177,26 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
    int64_t databits_nb = argv[2]->value.as_int64;
    int baudrate = selectBaudrate(baudrate_speed);
    int databits = selectDataBits(databits_nb);
+
    if(baudrate == -1){
-     result.type = Dart_CObject_kNull;
-     printf("Invalid baudrate");
-     // TODO error invalid baudrate
+     result.value.as_array.values[0] = &dart_null;
+     error_message->value.as_string = (char*) "Invalid baudrate";
    } else if(databits == -1) {
-     result.type = Dart_CObject_kNull;
-     printf("Invalid databits");
-     // TODO error invalid databits
+     result.value.as_array.values[0] = &dart_null;
+     error_message->value.as_string = (char*) "Invalid databits";
    } else {
      int64_t tty_fd = openAsync(portname, baudrate, databits);
-     result.type = Dart_CObject_kInt64;
-     result.value.as_int64 = tty_fd;
+     if(tty_fd < 0){
+       // TODO errno
+       result.value.as_array.values[0] = &dart_null;
+       error_message->value.as_string = (char*) "Invalid access";
+     } else {
+       Dart_CObject dart_result;
+       dart_result.type = Dart_CObject_kInt64;
+       dart_result.value.as_int64 = tty_fd;
+       result.value.as_array.values[0] = &dart_result;
+     }
+
    }
   } else if(method_code == CLOSE) {
    int64_t tty_fd = argv[0]->value.as_int64;
@@ -187,6 +208,8 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
    result.value.as_bool = true;
   } else if(method_code == WRITE) {
    int64_t tty_fd = argv[0]->value.as_int64;
+
+   // TODO int[]
    const char* data = argv[1]->value.as_string;
 
    int value = sendAsync(tty_fd, data);
