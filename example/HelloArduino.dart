@@ -6,7 +6,7 @@ main(){
   arduino.open().then((_) {
     print("Ctrl-c to close");
     arduino.onRead.listen(print);
-    arduino.send("Hello");
+    arduino.write("Hello");
           //arduino.close();
    });
 

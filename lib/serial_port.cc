@@ -22,6 +22,13 @@ Dart_NativeFunction ResolveName(Dart_Handle name, int argc);
 Dart_Handle HandleError(Dart_Handle handle);
 
 
+enum METHOD_CODE {
+  OPEN = 1,
+  CLOSE = 2,
+  READ = 3,
+  WRITE = 4
+};
+
 int selectBaudrate(int baudrate_speed){
   switch(baudrate_speed){
     // TODO baudrate 0 ? B0
@@ -141,14 +148,15 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
  Dart_CObject result;
  int argc = message->value.as_array.length - 1;
  Dart_CObject** argv = message->value.as_array.values + 1;
- char *name = argv[0]->value.as_string;
+ int64_t method_code = (int) argv[0]->value.as_int64;
  argv++;
  argc--;
  // TODO return a array : [result, "message"]
  // TODO replace by switch
  // TODO check args nb
  // TODO method return a Dart_CObject result
- if (strcmp("open", name) == 0) {
+ // TODO switch
+ if(method_code == OPEN) {
    //Dart_CObject* param0 = message->value.as_array.values[0];
    //Dart_CObject* param1 = message->value.as_array.values[1];
    const char* portname = argv[0]->value.as_string;
@@ -169,8 +177,7 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
      result.type = Dart_CObject_kInt64;
      result.value.as_int64 = tty_fd;
    }
-
- } else  if (strcmp("close", name) == 0) {
+  } else if(method_code == CLOSE) {
    int64_t tty_fd = argv[0]->value.as_int64;
 
    // TODO code close
@@ -178,7 +185,7 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
 
    result.type = Dart_CObject_kBool;
    result.value.as_bool = true;
- } else  if (strcmp("send", name) == 0) {
+  } else if(method_code == WRITE) {
    int64_t tty_fd = argv[0]->value.as_int64;
    const char* data = argv[1]->value.as_string;
 
@@ -186,7 +193,7 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
 
    result.type = Dart_CObject_kInt64;
    result.value.as_int64 = value;
- } else  if (strcmp("read", name) == 0) {
+  } else if(method_code == READ) {
    int64_t tty_fd = argv[0]->value.as_int64;
    int buffer_size = (int) argv[1]->value.as_int64;
    int8_t buffer[buffer_size];
@@ -209,13 +216,11 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
     } else {
       result.type = Dart_CObject_kNull;
     }
-
-
- } else {
-    // TODO
+  } else {
     printf("ERROR :Unknow function\n");
- }
- Dart_PostCObject(reply_port_id, &result);
+    result.type = Dart_CObject_kNull;
+  }
+  Dart_PostCObject(reply_port_id, &result);
 }
 
 void serialPortServicePort(Dart_NativeArguments arguments) {

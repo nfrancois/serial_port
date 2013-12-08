@@ -4,7 +4,15 @@ import 'dart:async';
 import 'dart:isolate';
 import 'dart-ext:serial_port';
 
+// TODO STOPBITS,PARITY, FLOWCONTROLS
+
 class SerialPort {
+
+  static const int _OPEN_METHOD = 1;
+  static const int _CLOSE_METHOD = 2;
+  static const int _READ_METHOD = 3;
+  static const int _WRITE_METHOD = 4;
+
 
   static const int _EOL = 10;
   static const List<int> AUTHORIZED_BAUDATE_SPEED =  const [50, 75, 110, 134, 150, 200, 300, 600, 1200, 1800, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 4000000];
@@ -30,7 +38,7 @@ class SerialPort {
   Future<bool> open() {
     var replyPort = new ReceivePort();
     var completer = new Completer<bool>();
-    _servicePort.send([replyPort.sendPort, "open", portname, baudrate, databits]);
+    _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portname, baudrate, databits]);
     replyPort.first.then((result) {
       if (result != null) {
         if(result >= 0){
@@ -52,7 +60,7 @@ class SerialPort {
     // TODO check OPEN
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
-    _servicePort.send([replyPort.sendPort, "close", _ttyFd]);
+    _servicePort.send([replyPort.sendPort, _CLOSE_METHOD, _ttyFd]);
     replyPort.first.then((result) {
       if (result != null) {
           _ttyFd = -1;
@@ -66,11 +74,11 @@ class SerialPort {
 
   // TODO rename sendString
   // TODO send with List<int>
-  Future<bool> send(String data){
+  Future<bool> write(String data){
     // TODO check OPEN
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
-    _servicePort.send([replyPort.sendPort, "send", _ttyFd, data]);
+    _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data]);
     replyPort.first.then((result) {
       if (result != null) {
         if(result >= 0){
@@ -95,7 +103,7 @@ class SerialPort {
 
   void _read(){
     _readPort = new RawReceivePort();
-    _servicePort.send([_readPort.sendPort, "read", _ttyFd, 256]);
+    _servicePort.send([_readPort.sendPort, _READ_METHOD, _ttyFd, 256]);
     _readPort.handler = (List<int> result) {
       _closeReadPort();
       if(result != null){
