@@ -233,19 +233,15 @@ void wrappedSerialPortServicePort(Dart_Port send_port_id, Dart_CObject* message)
    int n =  read(tty_fd, &buffer, sizeof(buffer));
    if(n > 0){
 
-     Dart_CObject dart_result;
-     dart_result.type = Dart_CObject_kArray;
-     dart_result.value.as_array.length = n;
+     result.type = Dart_CObject_kArray;
+     result.value.as_array.length = n;
 
      for(int i=0; i<n; i++){
-       // TODO without pointer ?
-       Dart_CObject* v = (Dart_CObject*) malloc(sizeof(Dart_CObject_kInt32));
-       v->type = Dart_CObject_kInt32;
-       v->value.as_int32 = buffer[i];
-       dart_result.value.as_array.values[i] = v;
+       Dart_CObject* byte = (Dart_CObject*) malloc(sizeof(Dart_CObject_kInt32));
+       byte->type = Dart_CObject_kInt32;
+       byte->value.as_int32 = buffer[i];
+       result.value.as_array.values[i] = byte;
      }
-
-     result.value.as_array.values[0] = &dart_result;
 
     } else {
       result.type = Dart_CObject_kNull;
