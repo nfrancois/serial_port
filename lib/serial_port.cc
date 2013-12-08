@@ -110,16 +110,17 @@ int64_t openAsync(const char* portname, speed_t baudrate, int databits){
   struct termios tio;
   memset(&tio, 0, sizeof(tio));
   tio.c_iflag=0;
-  tio.c_oflag=0;
-  tio.c_cflag= databits | CREAD | CLOCAL;
+  tio.c_oflag= IGNPAR;
+  tio.c_cflag= databits | CREAD | CLOCAL | HUPCL;
   tio.c_lflag=0;
   tio.c_cc[VMIN]=1;
-  tio.c_cc[VTIME]=5;
+  tio.c_cc[VTIME]=0;
 
   int tty_fd = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
   if(tty_fd > 0) {
     cfsetospeed(&tio, baudrate);
     cfsetispeed(&tio, baudrate);
+    tcflush(tty_fd, TCIFLUSH);
     tcsetattr(tty_fd, TCSANOW, &tio);
   }
   return tty_fd;
