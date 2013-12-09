@@ -30,22 +30,27 @@ class SerialPort {
   SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8});
 
   Future<bool> open() {
+    print("open 1");
     var replyPort = new ReceivePort();
     var completer = new Completer<bool>();
     _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portname, baudrate, databits]);
     replyPort.first.then((List result) {
+      print("result $result");
+      /*
       if (result[1].isEmpty) {
         _ttyFd = result[0];
-        _read();
+        //_read();
         completer.complete(true);
       } else {
         completer.completeError("Cannot open $portname : ${result[1]}");
       }
+      */
     });
     return completer.future;
   }
 
   Future<bool> close(){
+    print("close 1");
     // TODO check OPEN
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
