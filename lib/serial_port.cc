@@ -31,9 +31,12 @@
   return;
 
 // TODO add return
-#define DART_NATIVE_METHOD                          \
-  Dart_PostCObject(reply_port_id, &result);         \
-  return;  
+#define DECLARE_DART_NATIVE_METHOD(method_name)                    \
+  void method_name(Dart_Port reply_port_id, Dart_CObject** argv)       \
+
+
+#define CALL_DART_NATIVE_METHOD(method_name)        \
+  method_name(reply_port_id, argv);  
 
 
 #define SET_ERROR(_str)                             \
@@ -52,9 +55,6 @@
   SET_RESULT(Dart_CObject_kBool, as_bool, _value);    
 
 
-Dart_Handle NewDartExceptionWithMessage(const char* library_url,
-                                        const char* exception_name,
-                                        const char* message);
 /*
 Called the first time a native function with a given name is called,
  to resolve the Dart name of the native function into a C function pointer.
@@ -164,8 +164,7 @@ void DART_invalid_method(Dart_Port reply_port_id){
   RETURN_DART_RESULT;
 }
 
-
-void DART_open(Dart_Port reply_port_id, Dart_CObject** argv){
+DECLARE_DART_NATIVE_METHOD(native_open){
   DECLARE_DART_RESULT;
   // TODO : macro validation nbr arg
   // TODO : get args macro
@@ -207,7 +206,7 @@ void DART_open(Dart_Port reply_port_id, Dart_CObject** argv){
   RETURN_DART_RESULT;
 }
 
-void DART_close(Dart_Port reply_port_id, Dart_CObject** argv){
+DECLARE_DART_NATIVE_METHOD(native_close){
   DECLARE_DART_RESULT;  
   int64_t tty_fd = argv[0]->value.as_int64;
 
@@ -232,11 +231,12 @@ void dispatch_method_call(Dart_Port send_port_id, Dart_CObject* message){
 
   // TODO check args nb
   switch(method_code){
-    case OPEN : 
-      DART_open(reply_port_id, argv);
+    case OPEN :
+      CALL_DART_NATIVE_METHOD(native_open);
       break;
     case CLOSE:
-      DART_close(reply_port_id, argv);
+      CALL_DART_NATIVE_METHOD(native_close);
+      //DART_close(reply_port_id, argv);
     default:
      DART_invalid_method(reply_port_id);
      break;
