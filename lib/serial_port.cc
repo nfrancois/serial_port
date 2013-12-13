@@ -26,23 +26,29 @@
  current = resultDetail;                            \
 
 // TODO add return
-#define POST_DART_RESULT                           \
-  Dart_PostCObject(reply_port_id, &result);        \
+#define RETURN_DART_RESULT                          \
+  Dart_PostCObject(reply_port_id, &result);         \
+  return;
+
+// TODO add return
+#define DART_NATIVE_METHOD                          \
+  Dart_PostCObject(reply_port_id, &result);         \
+  return;  
 
 
 #define SET_ERROR(_str)                             \
-  current[0].type = Dart_CObject_kString;    \
+  current[0].type = Dart_CObject_kString;           \
   current[0].value.as_string = (char *)(_str);
 
 #define SET_RESULT(_typeName, _asType, _value)      \
-  current[1].type = _typeName;               \
+  current[1].type = _typeName;                      \
   current[1].value._asType = (_value);
 
 #define SET_RESULT_INT(_value)                      \
   SET_RESULT(Dart_CObject_kInt32, as_int32, _value);
 
 
-#define SET_RESULT_BOOL(_value)                      \
+#define SET_RESULT_BOOL(_value)                     \
   SET_RESULT(Dart_CObject_kBool, as_bool, _value);    
 
 
@@ -148,10 +154,6 @@ int selectDataBits(int dataBits) {
   }
 }
 
-int closeAsync(int64_t tty_fd){
-  return close(tty_fd);
-}
-
 int sendAsync(int64_t tty_fd, const char* data){
   return write(tty_fd, data, strlen(data));
 }
@@ -159,55 +161,63 @@ int sendAsync(int64_t tty_fd, const char* data){
 void DART_invalid_method(Dart_Port reply_port_id){
   DECLARE_DART_RESULT
   SET_ERROR("Unknow method");
-  POST_DART_RESULT;
+  RETURN_DART_RESULT;
 }
 
 
 void DART_open(Dart_Port reply_port_id, Dart_CObject** argv){
   DECLARE_DART_RESULT;
+  // TODO : macro validation nbr arg
   // TODO : get args macro
   const char* portname = argv[0]->value.as_string;
   int64_t baudrate_speed = argv[1]->value.as_int64;
   int64_t databits_nb = argv[2]->value.as_int64;
+  
   int baudrate = selectBaudrate(baudrate_speed);
-  int databits = selectDataBits(databits_nb);
-
   if(baudrate == -1){
      SET_ERROR("Invalid baudrate");
-  } else if(databits == -1) {
-     SET_ERROR("Invalid databits");
-  } else {
-    int tty_fd = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
-
-    if(tty_fd < 0){
-      // TODO errno
-      SET_ERROR("Invalid access");
-    } else {
-      struct termios tio;
-      memset(&tio, 0, sizeof(tio));
-      tio.c_iflag=0;
-      tio.c_oflag= IGNPAR;
-      tio.c_cflag= databits | CREAD | CLOCAL | HUPCL;
-      tio.c_lflag=0;
-      tio.c_cc[VMIN]=1;
-      tio.c_cc[VTIME]=0;
-      cfsetospeed(&tio, baudrate);
-      cfsetispeed(&tio, baudrate);
-      tcflush(tty_fd, TCIFLUSH);
-      tcsetattr(tty_fd, TCSANOW, &tio);
-      SET_RESULT_INT(tty_fd);
-    }
+     RETURN_DART_RESULT;
   }
-  POST_DART_RESULT;
+
+  int databits = selectDataBits(databits_nb);
+  if(databits == -1) {
+     SET_ERROR("Invalid databits");
+     RETURN_DART_RESULT;
+  }
+
+  int tty_fd = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
+  if(tty_fd < 0){
+    // TODO errno
+    SET_ERROR("Invalid access");
+  }
+  struct termios tio;
+  memset(&tio, 0, sizeof(tio));
+  tio.c_iflag=0;
+  tio.c_oflag= IGNPAR;
+  tio.c_cflag= databits | CREAD | CLOCAL | HUPCL;
+  tio.c_lflag=0;
+  tio.c_cc[VMIN]=1;
+  tio.c_cc[VTIME]=0;
+  cfsetospeed(&tio, baudrate);
+  cfsetispeed(&tio, baudrate);
+  tcflush(tty_fd, TCIFLUSH);
+  tcsetattr(tty_fd, TCSANOW, &tio);
+  SET_RESULT_INT(tty_fd);
+  
+  RETURN_DART_RESULT;
 }
 
 void DART_close(Dart_Port reply_port_id, Dart_CObject** argv){
   DECLARE_DART_RESULT;  
   int64_t tty_fd = argv[0]->value.as_int64;
-  // TODO check return ?
-  closeAsync(tty_fd);
+
+  int value = close(tty_fd);
+  if(value <0){
+    SET_ERROR("Impossible to close");
+    RETURN_DART_RESULT;    
+  }
   SET_RESULT_BOOL(true);  
-  POST_DART_RESULT;  
+  RETURN_DART_RESULT;  
 }
 
 // TODO maybe check type
@@ -219,11 +229,8 @@ void dispatch_method_call(Dart_Port send_port_id, Dart_CObject* message){
   int method_code = (int) argv[0]->value.as_int64;
   argv++;
   argc--;
-  // TODO return a array : [result, "message"]
-  // TODO replace by switch
+
   // TODO check args nb
-  // TODO method return a Dart_CObject result
-  // TODO switch
   switch(method_code){
     case OPEN : 
       DART_open(reply_port_id, argv);
@@ -234,18 +241,8 @@ void dispatch_method_call(Dart_Port send_port_id, Dart_CObject* message){
      DART_invalid_method(reply_port_id);
      break;
   }
-  /*else if(method_code == CLOSE) {
-   int64_t tty_fd = argv[0]->value.as_int64;
-
-   // TODO code close
-   closeAsync(tty_fd);
-
-   Dart_CObject dart_result;
-   dart_result.type = Dart_CObject_kBool;
-   dart_result.value.as_bool = true;
-   result.value.as_array.values[0] = &dart_result;
-
-  } else if(method_code == WRITE) {
+  /*
+   else if(method_code == WRITE) {
    int64_t tty_fd = argv[0]->value.as_int64;
 
    // TODO int[]

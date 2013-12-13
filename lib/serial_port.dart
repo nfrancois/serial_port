@@ -30,7 +30,6 @@ class SerialPort {
   SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8});
 
   Future<bool> open() {
-    print("open 1");
     var replyPort = new ReceivePort();
     var completer = new Completer<bool>();
     _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portname, baudrate, databits]);
@@ -47,7 +46,6 @@ class SerialPort {
   }
 
   Future<bool> close(){
-    print("close 1");
     // TODO check OPEN
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();

@@ -39,7 +39,7 @@ void main() {
                       serial.close();
                    });
     });
-
+ */
     test('Defaut baudrate 9600', () {
       var serial =  new SerialPort(dummySerialPort.path);
       expect(serial.baudrate, 9600);
@@ -54,7 +54,7 @@ void main() {
       var serial = new SerialPort(dummySerialPort.path, baudrate: 1);
       serial.open().catchError((error) => expect(error, "Cannot open dummySerialPort.tmp : Invalid baudrate"));
     });
-    */
+   
   });
 
 
