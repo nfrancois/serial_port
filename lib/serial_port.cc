@@ -25,7 +25,7 @@
  Dart_CObject* current;                             \
  current = resultDetail;                            \
 
-
+// TODO add return
 #define POST_DART_RESULT                           \
   Dart_PostCObject(reply_port_id, &result);        \
 
@@ -40,6 +40,10 @@
 
 #define SET_RESULT_INT(_value)                      \
   SET_RESULT(Dart_CObject_kInt32, as_int32, _value);
+
+
+#define SET_RESULT_BOOL(_value)                      \
+  SET_RESULT(Dart_CObject_kBool, as_bool, _value);    
 
 
 Dart_Handle NewDartExceptionWithMessage(const char* library_url,
@@ -161,7 +165,7 @@ void DART_invalid_method(Dart_Port reply_port_id){
 
 void DART_open(Dart_Port reply_port_id, Dart_CObject** argv){
   DECLARE_DART_RESULT;
-
+  // TODO : get args macro
   const char* portname = argv[0]->value.as_string;
   int64_t baudrate_speed = argv[1]->value.as_int64;
   int64_t databits_nb = argv[2]->value.as_int64;
@@ -179,7 +183,6 @@ void DART_open(Dart_Port reply_port_id, Dart_CObject** argv){
       // TODO errno
       SET_ERROR("Invalid access");
     } else {
-      printf("config tio\n");
       struct termios tio;
       memset(&tio, 0, sizeof(tio));
       tio.c_iflag=0;
@@ -192,11 +195,19 @@ void DART_open(Dart_Port reply_port_id, Dart_CObject** argv){
       cfsetispeed(&tio, baudrate);
       tcflush(tty_fd, TCIFLUSH);
       tcsetattr(tty_fd, TCSANOW, &tio);
-      printf("config tio end\n");
       SET_RESULT_INT(tty_fd);
     }
   }
   POST_DART_RESULT;
+}
+
+void DART_close(Dart_Port reply_port_id, Dart_CObject** argv){
+  DECLARE_DART_RESULT;  
+  int64_t tty_fd = argv[0]->value.as_int64;
+  // TODO check return ?
+  closeAsync(tty_fd);
+  SET_RESULT_BOOL(true);  
+  POST_DART_RESULT;  
 }
 
 // TODO maybe check type
@@ -217,6 +228,8 @@ void dispatch_method_call(Dart_Port send_port_id, Dart_CObject* message){
     case OPEN : 
       DART_open(reply_port_id, argv);
       break;
+    case CLOSE:
+      DART_close(reply_port_id, argv);
     default:
      DART_invalid_method(reply_port_id);
      break;

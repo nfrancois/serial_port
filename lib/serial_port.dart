@@ -35,16 +35,13 @@ class SerialPort {
     var completer = new Completer<bool>();
     _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portname, baudrate, databits]);
     replyPort.first.then((List result) {
-      print("result $result");
-      /*
-      if (result[1].isEmpty) {
-        _ttyFd = result[0];
+      if (result[0] == null) {
+        _ttyFd = result[1];
         //_read();
         completer.complete(true);
       } else {
-        completer.completeError("Cannot open $portname : ${result[1]}");
+        completer.completeError("Cannot open $portname : ${result[0]}");
       }
-      */
     });
     return completer.future;
   }
@@ -56,11 +53,11 @@ class SerialPort {
     var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _CLOSE_METHOD, _ttyFd]);
     replyPort.first.then((List result) {
-      if (result[1].isEmpty) {
+      if (result[0] == null) {
         _ttyFd = -1;
         completer.complete(true);
       } else {
-        completer.completeError("Cannot close $portname : ${result[1]}");
+        completer.completeError("Cannot close $portname : ${result[0]}");
       }
     });
     return completer.future;

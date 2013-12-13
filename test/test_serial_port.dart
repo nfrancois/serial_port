@@ -19,17 +19,18 @@ void main() {
       var serial =  new SerialPort(dummySerialPort.path, baudrate: 9600);
       serial.open().then((success) {
         expect(success, isTrue);
-        //serial.close();
+        serial.close();
       });
 	  });
 
-    /*
+    
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
                    .then((success) =>  expect(success, isTrue));
     });
 
+    /*
     test('Just write', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.write("Hello"))
