@@ -55,6 +55,7 @@
   SET_RESULT(Dart_CObject_kBool, as_bool, _value);    
 
 
+
 /*
 Called the first time a native function with a given name is called,
  to resolve the Dart name of the native function into a C function pointer.
@@ -216,11 +217,27 @@ DECLARE_DART_NATIVE_METHOD(native_close){
     RETURN_DART_RESULT;    
   }
   SET_RESULT_BOOL(true);  
+
   RETURN_DART_RESULT;  
 }
 
+DECLARE_DART_NATIVE_METHOD(native_write){
+  DECLARE_DART_RESULT; 
+
+  int64_t tty_fd = argv[0]->value.as_int64;
+
+  // TODO int[]
+  const char* data = argv[1]->value.as_string;
+
+  int value = sendAsync(tty_fd, data);
+
+  SET_RESULT_INT(value);    
+
+  RETURN_DART_RESULT; 
+}
+
 // TODO maybe check type
-void dispatch_method_call(Dart_Port send_port_id, Dart_CObject* message){
+void wrap_dispatch_method_call(Dart_Port send_port_id, Dart_CObject* message){
   Dart_Port reply_port_id = message->value.as_array.values[0]->value.as_send_port;
 
   int argc = message->value.as_array.length - 1;
@@ -236,7 +253,8 @@ void dispatch_method_call(Dart_Port send_port_id, Dart_CObject* message){
       break;
     case CLOSE:
       CALL_DART_NATIVE_METHOD(native_close);
-      //DART_close(reply_port_id, argv);
+//    case WRITE:
+//      CALL_DART_NATIVE_METHOD(native_write);      
     default:
      DART_invalid_method(reply_port_id);
      break;
@@ -290,7 +308,7 @@ void dispatch_method_call(Dart_Port send_port_id, Dart_CObject* message){
 void serialPortServicePort(Dart_NativeArguments arguments) {
   Dart_EnterScope();
   Dart_SetReturnValue(arguments, Dart_Null());
-  Dart_Port service_port = Dart_NewNativePort("SerialPortServicePort", dispatch_method_call, true);
+  Dart_Port service_port = Dart_NewNativePort("SerialPortServicePort", wrap_dispatch_method_call, true);
   if (service_port != ILLEGAL_PORT) {
     Dart_Handle send_port = HandleError(Dart_NewSendPort(service_port));
     Dart_SetReturnValue(arguments, send_port);
