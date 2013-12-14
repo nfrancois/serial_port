@@ -35,7 +35,7 @@
   current[1].value._asType = (_value);
 
 #define SET_RESULT_INT(_value)                      \
-  SET_RESULT(Dart_CObject_kInt32, as_int32, _value);
+  SET_RESULT(Dart_CObject_kInt64, as_int64, _value);
 
 
 #define SET_RESULT_BOOL(_value)                     \

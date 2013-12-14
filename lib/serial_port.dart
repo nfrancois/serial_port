@@ -36,7 +36,7 @@ class SerialPort {
     replyPort.first.then((List result) {
       if (result[0] == null) {
         _ttyFd = result[1];
-        //_read();
+        _read();
         completer.complete(true);
       } else {
         completer.completeError("Cannot open $portname : ${result[0]}");
@@ -91,11 +91,13 @@ class SerialPort {
     _servicePort.send([_readPort.sendPort, _READ_METHOD, _ttyFd, 256]);
     _readPort.handler = (List<int> result) {
       _closeReadPort();
-      if(result != null){
-        result.forEach((byte) {
+      // TODO when  result[0] != null
+      if(result[0] == null && result[1] != null){
+        //print(result[1]);
+        result[1].forEach((byte) {
           _lineBuffer.write(new String.fromCharCode(byte));
           if(byte == _EOL){
-            _onReadControllers.forEach((c) => c.add(_lineBuffer.toString()));
+            _onReadControllers.forEach((c) => c.add(_lineBuffer.toString().substring(0, _lineBuffer.length-1)));
             _lineBuffer.clear();
           }
         });

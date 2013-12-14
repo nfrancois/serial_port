@@ -182,6 +182,34 @@ DECLARE_DART_NATIVE_METHOD(native_write){
   RETURN_DART_RESULT; 
 }
 
+DECLARE_DART_NATIVE_METHOD(native_read){
+  DECLARE_DART_RESULT;
+
+  int64_t tty_fd = GET_INT_ARG(0);
+  int buffer_size = (int) GET_INT_ARG(1);
+  int8_t buffer[buffer_size];
+  fd_set readfs;
+  FD_ZERO(&readfs);
+  FD_SET(tty_fd, &readfs);
+  select(tty_fd+1, &readfs, NULL, NULL, NULL);
+  int n =  read(tty_fd, &buffer, sizeof(buffer));
+  if(n > 0){
+    // TODO SET_INT_ARRAY_RESULT;
+    // TODO try to not use malloc or use free
+    current[1].type = Dart_CObject_kArray;
+    current[1].value.as_array.length = n;
+    for(int i=0; i<n; i++){
+      //printf("%d => %d \n", i, buffer[i]);
+      Dart_CObject* byte = (Dart_CObject*) malloc(sizeof(Dart_CObject_kInt32));
+      byte->type = Dart_CObject_kInt32;
+      byte->value.as_int32 = buffer[i];
+      current[1].value.as_array.values[i] = byte;
+    }
+
+  }
+  RETURN_DART_RESULT;
+}
+
 DISPATCH_METHOD()
   // TODO check args nb
   SWITCH_METHOD_CODE {
@@ -194,6 +222,8 @@ DISPATCH_METHOD()
     case WRITE:
       CALL_DART_NATIVE_METHOD(native_write);
       break;
+    case READ:
+      CALL_DART_NATIVE_METHOD(native_read);
     default:
      UNKNOW_METHOD_CALL;
      break;
