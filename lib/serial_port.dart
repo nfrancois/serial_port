@@ -69,10 +69,10 @@ class SerialPort {
     var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data]);
     replyPort.first.then((result) {
-      if (result[1].isEmpty) {
+      if (result[0] == null) {
         completer.complete(true);
       } else {
-        completer.completeError("Cannot write in $portname : ${result[1]}");
+        completer.completeError("Cannot write in $portname : ${result[0]}");
       }
     });
     return completer.future;

@@ -30,8 +30,7 @@ void main() {
                    .then((success) =>  expect(success, isTrue));
     });
 
-    /*
-    test('Just write', () {
+     test('Just write', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.write("Hello"))
                    .then((success) {
@@ -39,7 +38,7 @@ void main() {
                       serial.close();
                    });
     });
- */
+
     test('Defaut baudrate 9600', () {
       var serial =  new SerialPort(dummySerialPort.path);
       expect(serial.baudrate, 9600);

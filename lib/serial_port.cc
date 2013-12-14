@@ -106,10 +106,6 @@ int selectDataBits(int dataBits) {
   }
 }
 
-int sendAsync(int64_t tty_fd, const char* data){
-  return write(tty_fd, data, strlen(data));
-}
-
 DECLARE_DART_NATIVE_METHOD(native_open){
   DECLARE_DART_RESULT;
   // TODO : macro validation nbr arg
@@ -170,20 +166,22 @@ DECLARE_DART_NATIVE_METHOD(native_close){
 DECLARE_DART_NATIVE_METHOD(native_write){
   DECLARE_DART_RESULT; 
 
-  int64_t tty_fd = argv[0]->value.as_int64;
+  int64_t tty_fd = GET_INT_ARG(0);
 
   // TODO int[]
-  const char* data = argv[1]->value.as_string;
+  const char* data = GET_STRING_ARG(1);
 
-  int value = sendAsync(tty_fd, data);
-
-  SET_RESULT_INT(value);    
+  int value = write(tty_fd, data, strlen(data));
+  if(value <0){
+    // TODO errno
+    SET_ERROR("Impossible to close");
+    RETURN_DART_RESULT;
+  }
+  SET_RESULT_INT(value);
 
   RETURN_DART_RESULT; 
 }
 
-// TODO maybe check type
-// inner method :)
 DISPATCH_METHOD()
   // TODO check args nb
   SWITCH_METHOD_CODE {
@@ -192,26 +190,15 @@ DISPATCH_METHOD()
       break;
     case CLOSE:
       CALL_DART_NATIVE_METHOD(native_close);
-//    case WRITE:
-//      CALL_DART_NATIVE_METHOD(native_write);      
+      break;
+    case WRITE:
+      CALL_DART_NATIVE_METHOD(native_write);
+      break;
     default:
      UNKNOW_METHOD_CALL;
      break;
   }
   /*
-   else if(method_code == WRITE) {
-   int64_t tty_fd = argv[0]->value.as_int64;
-
-   // TODO int[]
-   const char* data = argv[1]->value.as_string;
-
-   int value = sendAsync(tty_fd, data);
-
-   Dart_CObject dart_result;
-   dart_result.type = Dart_CObject_kInt64;
-   dart_result.value.as_int64 = value;
-   result.value.as_array.values[0] = &dart_result;
-
   } else if(method_code == READ) {
    int64_t tty_fd = argv[0]->value.as_int64;
    int buffer_size = (int) argv[1]->value.as_int64;
