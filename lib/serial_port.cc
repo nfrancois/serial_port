@@ -127,6 +127,7 @@ DECLARE_DART_NATIVE_METHOD(native_open){
   }
 
   int tty_fd = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
+  printf("df=%d\n", tty_fd);
   if(tty_fd < 0){
     // TODO errno
     SET_ERROR("Invalid access");
@@ -171,6 +172,8 @@ DECLARE_DART_NATIVE_METHOD(native_write){
   // TODO int[]
   const char* data = GET_STRING_ARG(1);
 
+  printf("write=> %s\n", data);
+
   int value = write(tty_fd, data, strlen(data));
   if(value <0){
     // TODO errno
@@ -188,10 +191,10 @@ DECLARE_DART_NATIVE_METHOD(native_read){
   int64_t tty_fd = GET_INT_ARG(0);
   int buffer_size = (int) GET_INT_ARG(1);
   int8_t buffer[buffer_size];
-  fd_set readfs;
-  FD_ZERO(&readfs);
-  FD_SET(tty_fd, &readfs);
-  select(tty_fd+1, &readfs, NULL, NULL, NULL);
+  //fd_set readfs;
+  //FD_ZERO(&readfs);
+  //FD_SET(tty_fd, &readfs);
+  //select(tty_fd+1, &readfs, NULL, NULL, NULL);
   int n =  read(tty_fd, &buffer, sizeof(buffer));
   if(n > 0){
     // TODO SET_INT_ARRAY_RESULT;
@@ -211,7 +214,6 @@ DECLARE_DART_NATIVE_METHOD(native_read){
 }
 
 DISPATCH_METHOD()
-  // TODO check args nb
   SWITCH_METHOD_CODE {
     case OPEN :
       CALL_DART_NATIVE_METHOD(native_open);
