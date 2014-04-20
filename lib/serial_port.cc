@@ -113,7 +113,7 @@ DECLARE_DART_NATIVE_METHOD(native_open){
   const char* portname = GET_STRING_ARG(0);
   int64_t baudrate_speed = GET_INT_ARG(1);
   int64_t databits_nb = GET_INT_ARG(2);
-  
+
   int baudrate = selectBaudrate(baudrate_speed);
   if(baudrate == -1){
      SET_ERROR("Invalid baudrate");
@@ -127,7 +127,7 @@ DECLARE_DART_NATIVE_METHOD(native_open){
   }
 
   int tty_fd = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
-  printf("df=%d\n", tty_fd);
+
   if(tty_fd < 0){
     // TODO errno
     SET_ERROR("Invalid access");
@@ -171,8 +171,6 @@ DECLARE_DART_NATIVE_METHOD(native_write){
 
   // TODO int[]
   const char* data = GET_STRING_ARG(1);
-
-  printf("write=> %s\n", data);
 
   int value = write(tty_fd, data, strlen(data));
   if(value <0){
