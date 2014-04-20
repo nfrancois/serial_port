@@ -62,7 +62,7 @@ void wrap_dispatch_methods(Dart_Port send_port_id, Dart_CObject* message){      
   Dart_Port reply_port_id = message->value.as_array.values[0]->value.as_send_port;     \
   int argc = message->value.as_array.length - 1;                                       \
   Dart_CObject** argv = message->value.as_array.values + 1;                            \
-  int method_code = (int) argv[0]->value.as_int64;                                     \
+  int method_code = (int) argv[0]->value.as_int32;                                     \
   argv++;                                                                              \
   argc--;                                                                              
 

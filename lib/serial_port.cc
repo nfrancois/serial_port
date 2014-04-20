@@ -182,32 +182,38 @@ DECLARE_DART_NATIVE_METHOD(native_write){
   }
   SET_RESULT_INT(value);
 
-  RETURN_DART_RESULT; 
+  RETURN_DART_RESULT;
 }
 
 DECLARE_DART_NATIVE_METHOD(native_read){
   DECLARE_DART_RESULT;
 
   int64_t tty_fd = GET_INT_ARG(0);
+
   int buffer_size = (int) GET_INT_ARG(1);
-  int8_t buffer[buffer_size];
+
+  uint8_t *buffer, *data;
+  int bytes_read;
+  //int8_t buffer[buffer_size];
+  // TODO when concurrency (wait for read)
   //fd_set readfs;
   //FD_ZERO(&readfs);
   //FD_SET(tty_fd, &readfs);
   //select(tty_fd+1, &readfs, NULL, NULL, NULL);
-  int n =  read(tty_fd, &buffer, sizeof(buffer));
-  if(n > 0){
+  buffer = reinterpret_cast<uint8_t *>(malloc(buffer_size * sizeof(uint8_t)));
+  bytes_read = read(static_cast<int>(tty_fd), buffer, static_cast<int>(buffer_size));
+
+  //bytes_read =  read(tty_fd, &buffer, sizeof(buffer));
+  if(bytes_read > 0){
     // TODO SET_INT_ARRAY_RESULT;
-    // TODO try to not use malloc or use free
-    current[1].type = Dart_CObject_kArray;
-    current[1].value.as_array.length = n;
-    for(int i=0; i<n; i++){
-      //printf("%d => %d \n", i, buffer[i]);
-      Dart_CObject* byte = (Dart_CObject*) malloc(sizeof(Dart_CObject_kInt32));
-      byte->type = Dart_CObject_kInt32;
-      byte->value.as_int32 = buffer[i];
-      current[1].value.as_array.values[i] = byte;
-    }
+    data = reinterpret_cast<uint8_t *>(malloc(bytes_read * sizeof(uint8_t)));
+    memcpy(data, buffer, bytes_read);
+    free(buffer);
+
+    current[1].type = Dart_CObject_kTypedData;
+    current[1].value.as_typed_data.type = Dart_TypedData_kUint8;
+    current[1].value.as_typed_data.values = data;
+    current[1].value.as_typed_data.length = bytes_read;
 
   }
   RETURN_DART_RESULT;
@@ -230,37 +236,6 @@ DISPATCH_METHOD()
      UNKNOW_METHOD_CALL;
      break;
   }
-  /*
-  } else if(method_code == READ) {
-   int64_t tty_fd = argv[0]->value.as_int64;
-   int buffer_size = (int) argv[1]->value.as_int64;
-   int8_t buffer[buffer_size];
-   fd_set readfs;
-   FD_ZERO(&readfs);
-   FD_SET(tty_fd, &readfs);
-   select(tty_fd+1, &readfs, NULL, NULL, NULL);
-   int n =  read(tty_fd, &buffer, sizeof(buffer));
-   if(n > 0){
-
-     result.type = Dart_CObject_kArray;
-     result.value.as_array.length = n;
-
-     for(int i=0; i<n; i++){
-       Dart_CObject* byte = (Dart_CObject*) malloc(sizeof(Dart_CObject_kInt32));
-       byte->type = Dart_CObject_kInt32;
-       byte->value.as_int32 = buffer[i];
-       result.value.as_array.values[i] = byte;
-     }
-
-    } else {
-      result.type = Dart_CObject_kNull;
-    }
-  }
-   else {
-
-  }
-*/
-
-} 
+}
 
 DECLARE_LIB(serial_port, serialPortServicePort)
