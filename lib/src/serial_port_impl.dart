@@ -26,6 +26,9 @@ class SerialPort {
   SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8});
 
   Future<bool> open() {
+    if(_ttyFd != -1){
+      throw new StateError("$portname is yet open.");
+    }
     var replyPort = new ReceivePort();
     var completer = new Completer<bool>();
     _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portname, baudrate, databits]);
@@ -42,7 +45,7 @@ class SerialPort {
   }
 
   Future<bool> close(){
-    // TODO check OPEN
+    _checkOpen();
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _CLOSE_METHOD, _ttyFd]);
@@ -60,7 +63,7 @@ class SerialPort {
   // TODO rename sendString
   // TODO send with List<int>
   Future<bool> write(String data){
-    // TODO check OPEN
+    _checkOpen();
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data]);
@@ -111,6 +114,12 @@ class SerialPort {
     if(_readPort != null){
       _readPort.close();
       _readPort = null;
+    }
+  }
+
+  void _checkOpen(){
+    if(_ttyFd == -1){
+      throw new StateError("$portname is not open.");
     }
   }
 

@@ -23,7 +23,7 @@ void main() {
       });
 	  });
 
-    
+
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
@@ -53,7 +53,7 @@ void main() {
       var serial = new SerialPort(dummySerialPort.path, baudrate: 1);
       serial.open().catchError((error) => expect(error, "Cannot open dummySerialPort.tmp : Invalid baudrate"));
     });
-   
+
   });
 
 
