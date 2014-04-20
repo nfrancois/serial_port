@@ -1,6 +1,6 @@
 /*
 
- Just say Hello !
+ Just say Hello  every 5 seconds !
 
 */
 
@@ -9,8 +9,6 @@ void setup() {
 }
 
 void loop() {
-  if (Serial.available()) {
     Serial.println("Hello");
     delay(5000);
-  }
 }
