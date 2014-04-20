@@ -25,7 +25,7 @@
 
 
 #define CALL_DART_NATIVE_METHOD(method_name)        \
-  method_name(reply_port_id, argv);  
+  method_name(reply_port_id, argv);
 
 
 #define SET_ERROR(_str)                             \
@@ -37,24 +37,24 @@
   current[1].value._asType = (_value);
 
 #define SET_RESULT_INT(_value)                      \
-  SET_RESULT(Dart_CObject_kInt64, as_int64, _value);
+  SET_RESULT(Dart_CObject_kInt32, as_int32, _value);
 
 
 #define SET_RESULT_BOOL(_value)                     \
-  SET_RESULT(Dart_CObject_kBool, as_bool, _value);    
+  SET_RESULT(Dart_CObject_kBool, as_bool, _value);
 
 // TODO check type
 #define GET_INT_ARG(_position)                                         \
-  argv[_position]->value.as_int64;                                     \
+  argv[_position]->value.as_int32;                                     \
 
 // TODO check type
 #define GET_STRING_ARG(_position)                                      \
-  argv[_position]->value.as_string;   
+  argv[_position]->value.as_string;
 
 #define UNKNOW_METHOD_CALL    \
   DECLARE_DART_RESULT         \
   SET_ERROR("Unknow method"); \
-  RETURN_DART_RESULT;         
+  RETURN_DART_RESULT;
 
 
 #define DISPATCH_METHOD(lib_name)                                                     \
@@ -64,7 +64,7 @@ void wrap_dispatch_methods(Dart_Port send_port_id, Dart_CObject* message){      
   Dart_CObject** argv = message->value.as_array.values + 1;                            \
   int method_code = (int) argv[0]->value.as_int32;                                     \
   argv++;                                                                              \
-  argc--;                                                                              
+  argc--;
 
 #define SWITCH_METHOD_CODE                                                             \
   switch(method_code)

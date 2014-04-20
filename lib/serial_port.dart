@@ -95,7 +95,6 @@ class SerialPort {
       _closeReadPort();
       // TODO when  result[0] != null
       if(result[0] == null && result[1] != null){
-        //print(result[1]);
         result[1].forEach((byte) {
           _lineBuffer.write(new String.fromCharCode(byte));
           if(byte == _EOL){

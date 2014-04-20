@@ -145,27 +145,27 @@ DECLARE_DART_NATIVE_METHOD(native_open){
   tcflush(tty_fd, TCIFLUSH);
   tcsetattr(tty_fd, TCSANOW, &tio);
   SET_RESULT_INT(tty_fd);
-  
+
   RETURN_DART_RESULT;
 }
 
 DECLARE_DART_NATIVE_METHOD(native_close){
-  DECLARE_DART_RESULT;  
+  DECLARE_DART_RESULT;
   int64_t tty_fd = GET_INT_ARG(0);
 
   int value = close(tty_fd);
   if(value <0){
     // TODO errno
     SET_ERROR("Impossible to close");
-    RETURN_DART_RESULT;    
+    RETURN_DART_RESULT;
   }
-  SET_RESULT_BOOL(true);  
+  SET_RESULT_BOOL(true);
 
-  RETURN_DART_RESULT;  
+  RETURN_DART_RESULT;
 }
 
 DECLARE_DART_NATIVE_METHOD(native_write){
-  DECLARE_DART_RESULT; 
+  DECLARE_DART_RESULT;
 
   int64_t tty_fd = GET_INT_ARG(0);
 
