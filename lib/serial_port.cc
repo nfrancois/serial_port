@@ -11,7 +11,7 @@
 #include "include/dart_native_api.h"
 #include "native_helper.h"
 
-Dart_NativeFunction ResolveName(Dart_Handle name, int argc);
+Dart_NativeFunction ResolveName(Dart_Handle name, int argc, bool *auto_setup_scope);
 
 Dart_Handle HandleError(Dart_Handle handle);
 

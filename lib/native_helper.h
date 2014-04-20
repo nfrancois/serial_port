@@ -1,5 +1,6 @@
 // TODO a message header
 // TODO Dart_NewNativePort currently not support concurrently : https://github.com/dart-lang/bleeding_edge/blob/master/dart/runtime/include/dart_native_api.h
+// TODO auto_setup_scope
 
 #define DECLARE_DART_RESULT                         \
  Dart_CObject result;                               \
@@ -86,7 +87,7 @@ void lib_name##_ServicePort(Dart_NativeArguments arguments) {                   
   }                                                                                    \
   Dart_ExitScope();                                                                    \
 }                                                                                      \
-Dart_NativeFunction ResolveName(Dart_Handle name, int argc) {                          \
+Dart_NativeFunction ResolveName(Dart_Handle name, int argc, bool *auto_setup_scope) {  \
   if (!Dart_IsString(name)) return NULL;                                               \
   Dart_NativeFunction result = NULL;                                                   \
   Dart_EnterScope();                                                                   \
