@@ -5,13 +5,13 @@ import 'package:ccompile/ccompile.dart';
 import 'package:path/path.dart' as pathos;
 
 void main(List<String> args) {
-  Program.main(args);
+  Program.main('lib/src/serial_port.yaml');
 }
 
 class Program {
-  static void main(List<String> args) {
+  static void main(yaml_path) {
     var basePath = Directory.current.path;
-    var projectPath = toAbsolutePath('lib/serial_port.yaml', basePath);
+    var projectPath = toAbsolutePath(yaml_path, basePath);
     var result = Program.buildProject(projectPath, {
       'start': 'Building project "$projectPath"',
       'success': 'Building complete successfully',
