@@ -1,4 +1,5 @@
 // TODO a message header
+// TODO Dart_NewNativePort currently not support concurrently : https://github.com/dart-lang/bleeding_edge/blob/master/dart/runtime/include/dart_native_api.h
 
 #define DECLARE_DART_RESULT                         \
  Dart_CObject result;                               \
