@@ -15,7 +15,7 @@ class SerialPort {
   final int baudrate;
   final int databits;
 
-  final List<StreamController> _onReadControllers = [];
+  final List<StreamController<List<int>>> _onReadControllers = [];
   RawReceivePort _readPort  = null;
 
   int _ttyFd = -1;
@@ -89,7 +89,7 @@ class SerialPort {
       _closeReadPort();
       // TODO when  result[0] != null
       if(result[0] == null && result[1] != null){
-        _onReadControllers.forEach((c) => c.add(new String.fromCharCodes(result[1])));
+        _onReadControllers.forEach((c) => c.add(result[1]));
         /* full line reader
         result[1].forEach((byte) {
           _lineBuffer.write(new String.fromCharCode(byte));
