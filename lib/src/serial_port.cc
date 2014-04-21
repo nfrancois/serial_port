@@ -167,12 +167,25 @@ DECLARE_DART_NATIVE_METHOD(native_close){
 DECLARE_DART_NATIVE_METHOD(native_write){
   DECLARE_DART_RESULT;
 
+
   int64_t tty_fd = GET_INT_ARG(0);
 
-  // TODO int[]
-  const char* data = GET_STRING_ARG(1);
+  //printf("write");
 
-  int value = write(tty_fd, data, strlen(data));
+  // TODO int[]
+ //const char* data = GET_STRING_ARG(1);
+    /*
+    struct {
+          intptr_t length;
+          struct _Dart_CObject** values;
+        } as_array;
+        */
+  intptr_t length = argv[1]->value.as_array.length;
+  Dart_CObject** values = argv[1]->value.as_array.values;
+
+  printf("==> %ld", length);
+
+  int value = 2;//write(tty_fd, data, strlen(data));
   if(value <0){
     // TODO errno
     SET_ERROR("Impossible to close");

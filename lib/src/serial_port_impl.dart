@@ -63,10 +63,12 @@ class SerialPort {
   // TODO rename sendString
   // TODO send with List<int>
   Future<bool> write(String data){
+    print("write $data");
     _checkOpen();
+    print("write ${data.codeUnits}");
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
-    _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data]);
+    _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data.codeUnits]);
     replyPort.first.then((result) {
       if (result[0] == null) {
         completer.complete(true);
