@@ -7,7 +7,7 @@ var arduino;
 main(){
   var buffer = new StringBuffer();
   arduino = new SerialPort("/dev/tty.usbmodem1411");
-  arduino.onRead.map((bytes) => new String.fromCharCodes(bytes)).listen((word){
+  arduino.onRead.map(BYTES_TO_STRING).listen((word){
     buffer.write(word);
     if(buffer.toString().startsWith("pong")){
       print(buffer.toString());
