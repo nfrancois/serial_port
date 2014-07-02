@@ -65,7 +65,7 @@ class SerialPort {
   Future<bool> write(String data){
     print("write $data");
     _checkOpen();
-    print("write ${data.codeUnits}");
+    print("write ${data.codeUnits.length} bytes => ${data.codeUnits}");
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data.codeUnits]);

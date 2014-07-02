@@ -153,7 +153,7 @@ DECLARE_DART_NATIVE_METHOD(native_close){
   DECLARE_DART_RESULT;
   int64_t tty_fd = GET_INT_ARG(0);
 
-  int value = close(tty_fd);
+  int value = close(static_cast<int>(tty_fd));
   if(value <0){
     // TODO errno
     SET_ERROR("Impossible to close");
@@ -170,20 +170,28 @@ DECLARE_DART_NATIVE_METHOD(native_write){
 
   int64_t tty_fd = GET_INT_ARG(0);
 
-  //printf("write");
+  //printf("writ to %d\n", tty_fd);
 
   // TODO int[]
  //const char* data = GET_STRING_ARG(1);
+
+ //printf("==> %s \n", data);
     /*
     struct {
           intptr_t length;
           struct _Dart_CObject** values;
         } as_array;
         */
-  intptr_t length = argv[1]->value.as_array.length;
-  Dart_CObject** values = argv[1]->value.as_array.values;
+  //int length = static_cast<int>(argv[1]->value.as_in);
+  //printf("length = %d\n", length);
+  //Dart_CObject** values = argv[1]->value.as_typed_data.values;
+  //Dart_CObject** values = argv[1]->value.as_array.values;
+  Dart_CObject** values = argv[1]->value.as_array.values + 1;
+  //int length = argv[1]->value.as_typed_data.length;
+  //printf("%d\n", length);
 
-  printf("==> %ld", length);
+  printf("%d \n", values[0]);
+
 
   int value = 2;//write(tty_fd, data, strlen(data));
   if(value <0){
@@ -201,7 +209,7 @@ DECLARE_DART_NATIVE_METHOD(native_read){
 
   int64_t tty_fd = GET_INT_ARG(0);
 
-  int buffer_size = (int) GET_INT_ARG(1);
+  int64_t buffer_size = GET_INT_ARG(1);
 
   uint8_t *buffer, *data;
   int bytes_read;

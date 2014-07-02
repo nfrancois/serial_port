@@ -32,7 +32,8 @@ void main() {
 
      test('Just write', () {
       var serial =  new SerialPort(dummySerialPort.path);
-      serial.open().then((_) => serial.write("Hello"))
+      serial.open().then((_) => serial.write
+      ("Hellooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"))
                    .then((success) {
                       expect(success, isTrue);
                       serial.close();
