@@ -13,7 +13,7 @@ Yes, it must be compiled because it's a VM extension, depending of execution pla
 
 ### What I need ?
 
-`gcc`, `make` and `dart` must be in PATH
+`gcc`, `make` and `dart must be in PATH
 
 ### How compile it ?
 
