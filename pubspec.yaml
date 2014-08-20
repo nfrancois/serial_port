@@ -2,7 +2,7 @@ name: serial_port
 version: 0.0.1-dev
 description: Dart extension library to communicate on serial port.
 environnment:
-  sdk: '>=1.3.0 <2.0.0'
+  sdk: '>=1.5.0 <2.0.0'
 dependencies:
   ccompile: ">=0.2.1 <0.3.0"
 dev_dependencies:
