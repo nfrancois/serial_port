@@ -8,6 +8,11 @@ import 'dart:math';
 void main() {
   File dummySerialPort;
   Random random = new Random();
+  group('Util', (){
+    test('Convert bytes to string', (){
+      expect(BYTES_TO_STRING([72, 101, 108, 108, 111]), "Hello");
+    });
+  });
   group('Serial port', () {
     setUp(() {
       dummySerialPort = new File("dummySerialPort.tmp");
