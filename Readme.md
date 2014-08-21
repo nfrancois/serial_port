@@ -1,7 +1,7 @@
 #SerialPort
 
 
-SerialPort is a Dart Api to provide access for reading and reading with serial port.
+SerialPort is a Dart Api to provide access read and write access to serial port.
 
 Inspiration come from [node-serialport](https://github.com/voodootikigod/node-serialport).
 
@@ -37,12 +37,13 @@ dart test/test_serial_port.dart
 unittest-suite-wait-for-done
 PASS: Serial port Just open
 PASS: Serial port Just close
-PASS: Serial port Just write
+PASS: Serial port Just write String
+PASS: Serial port Just write bytes
 PASS: Serial port Defaut baudrate 9600
 PASS: Serial port Fail with unkwnon portname
 PASS: Serial port Fail with unkwnon baudrate
 
-All 6 tests passed.
+All 7 tests passed.
 unittest-suite-success
 ```
 
@@ -69,6 +70,6 @@ main(){
 
 * Use byte array instead of string to write on serial port.
 * Wait for `TODO(turnidge): Currently handle_concurrently is ignored`from Dart VM.
-* Support serial port communication parameter like node-serialport.
+* Support serial port communication parameter like (parity, stopbits, FLOWCONTROLS, ...).
 * Look for using [](native_extension_with_build_tools)https://github.com/mezoni/native_extension_with_build_tools) ?
 
