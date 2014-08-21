@@ -30,9 +30,18 @@ void main() {
                    .then((success) =>  expect(success, isTrue));
     });
 
-     test('Just write', () {
+     test('Just write String', () {
       var serial =  new SerialPort(dummySerialPort.path);
-      serial.open().then((_) => serial.write("Hello"))
+      serial.open().then((_) => serial.writeString("Hello"))
+                   .then((success) {
+                      expect(success, isTrue);
+                      serial.close();
+                   });
+    });
+
+    test('Just write bytes', () {
+      var serial =  new SerialPort(dummySerialPort.path);
+      serial.open().then((_) => serial.write([72, 101, 108, 108, 111]))
                    .then((success) {
                       expect(success, isTrue);
                       serial.close();

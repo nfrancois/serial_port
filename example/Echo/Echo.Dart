@@ -6,6 +6,6 @@ main(){
   arduino.onRead.map(BYTES_TO_STRING).listen(print);
   arduino.open().then((_) {
     print("Ctrl-c to close");
-    new Timer(new Duration(seconds: 2), () => arduino.write("Hello !"));
+    new Timer(new Duration(seconds: 2), () => arduino.writeString("Hello !"));
   });
 }

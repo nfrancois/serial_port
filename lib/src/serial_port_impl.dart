@@ -20,9 +20,6 @@ class SerialPort {
 
   int _ttyFd = -1;
 
-  final StringBuffer _lineBuffer = new StringBuffer();
-
-
   SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8});
 
   Future<bool> open() {
@@ -60,9 +57,8 @@ class SerialPort {
     return completer.future;
   }
 
-  // TODO rename sendString
-  // TODO send with List<int>
-  Future<bool> write(String data){
+  // TODO rename sendString ?
+  Future<bool> writeString(String data){
     _checkOpen();
     var completer = new Completer<bool>();
     var replyPort = new ReceivePort();
@@ -77,9 +73,12 @@ class SerialPort {
     return completer.future;
   }
 
-  // TODO Stream a List<int>
+  Future<bool> write(List<int> bytes){
+    // TODO have a real c implementation for send by bytes
+    return writeString(new String.fromCharCodes(bytes));
+  }
 
-  Stream<String> get onRead {
+  Stream<List<int>> get onRead {
     StreamController<String> controller = new StreamController();
     _onReadControllers.add(controller);
     return controller.stream;
@@ -93,15 +92,6 @@ class SerialPort {
       // TODO when  result[0] != null
       if(result[0] == null && result[1] != null){
         _onReadControllers.forEach((c) => c.add(result[1]));
-        /* full line reader
-        result[1].forEach((byte) {
-          _lineBuffer.write(new String.fromCharCode(byte));
-          if(byte == _EOL){
-            _onReadControllers.forEach((c) => c.add(_lineBuffer.toString().substring(0, _lineBuffer.length-1)));
-            _lineBuffer.clear();
-          }
-        });
-          */
       }
       // Continue to read
       if(_ttyFd != -1){
