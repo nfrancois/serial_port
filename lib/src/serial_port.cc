@@ -20,7 +20,8 @@ enum METHOD_CODE {
   OPEN = 1,
   CLOSE = 2,
   READ = 3,
-  WRITE = 4
+  WRITE = 4,
+  WRITE_BYTE = 5 // TODO delete with the real write by bytes implementation.
 };
 
 int selectBaudrate(int baudrate_speed){
@@ -183,6 +184,22 @@ DECLARE_DART_NATIVE_METHOD(native_write){
   RETURN_DART_RESULT;
 }
 
+DECLARE_DART_NATIVE_METHOD(native_write_byte){
+  DECLARE_DART_RESULT;
+  int64_t tty_fd = GET_INT_ARG(0);
+  int8_t byte = GET_INT_ARG(1);
+
+  int value = write(tty_fd, &byte, sizeof(int8_t));
+  if(value <0){
+    // TODO errno
+    SET_ERROR("Impossible to close");
+    RETURN_DART_RESULT;
+  }
+  SET_RESULT_INT(value);
+
+  RETURN_DART_RESULT;
+}
+
 DECLARE_DART_NATIVE_METHOD(native_read){
   DECLARE_DART_RESULT;
 
@@ -225,11 +242,15 @@ DISPATCH_METHOD()
     case CLOSE:
       CALL_DART_NATIVE_METHOD(native_close);
       break;
+    case READ:
+      CALL_DART_NATIVE_METHOD(native_read);
+      break;
     case WRITE:
       CALL_DART_NATIVE_METHOD(native_write);
       break;
-    case READ:
-      CALL_DART_NATIVE_METHOD(native_read);
+    case WRITE_BYTE:
+      CALL_DART_NATIVE_METHOD(native_write_byte);
+      break;
     default:
      UNKNOW_METHOD_CALL;
      break;

@@ -4,10 +4,12 @@ part of serial_port;
 
 class SerialPort {
 
+  // TODO wait for enum
   static const int _OPEN_METHOD = 1;
   static const int _CLOSE_METHOD = 2;
   static const int _READ_METHOD = 3;
   static const int _WRITE_METHOD = 4;
+  static const int _WRITE_BYTE_METHOD = 5;
 
   static const int _EOL = 10;
 
@@ -81,7 +83,23 @@ class SerialPort {
 
   Future<bool> write(List<int> bytes){
     // TODO have a real c implementation for send by bytes
-    return writeString(new String.fromCharCodes(bytes));
+    final writes = bytes.map((byte) => _writeOneByte(byte));
+    return Future.wait(writes, eagerError: true).then((_) => true);
+  }
+
+  Future<bool> _writeOneByte(int byte){
+    _checkOpen();
+    var completer = new Completer<bool>();
+    var replyPort = new ReceivePort();
+    _servicePort.send([replyPort.sendPort, _WRITE_BYTE_METHOD, _ttyFd, byte]);
+    replyPort.first.then((result) {
+      if (result[0] == null) {
+        completer.complete(true);
+      } else {
+        completer.completeError("Cannot write in $portname : ${result[0]}");
+      }
+    });
+    return completer.future;
   }
 
   Stream<List<int>> get onRead {
