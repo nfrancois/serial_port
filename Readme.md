@@ -1,5 +1,7 @@
 #SerialPort
 
+[![Build Status](https://drone.io/github.com/nfrancois/SerialPort/status.png)](https://drone.io/github.com/nfrancois/SerialPort/latest)
+
 
 SerialPort is a Dart Api to provide access read and write access to serial port.
 
