@@ -41,6 +41,12 @@ class SerialPort {
     return completer.future;
   }
 
+  /// Getter for open connection
+  bool get isOpen => _ttyFd != -1;
+
+  /// Getter for file descriptor (just for debug)
+  int get fd => _ttyFd;
+
   Future<bool> close(){
     _checkOpen();
     var completer = new Completer<bool>();
