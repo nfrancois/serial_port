@@ -24,6 +24,7 @@ class SerialPort {
 
   SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8});
 
+  /// Open the connection with serial port.
   Future<bool> open() {
     if(_ttyFd != -1){
       throw new StateError("$portname is yet open.");
@@ -49,6 +50,7 @@ class SerialPort {
   /// Getter for file descriptor (just for debug)
   int get fd => _ttyFd;
 
+  /// Close the connection.
   Future<bool> close(){
     _checkOpen();
     final completer = new Completer<bool>();
@@ -65,7 +67,7 @@ class SerialPort {
     return completer.future;
   }
 
-  // TODO rename sendString ?
+  /// Write as a string
   Future<bool> writeString(String data){
     _checkOpen();
     final completer = new Completer<bool>();
@@ -81,6 +83,7 @@ class SerialPort {
     return completer.future;
   }
 
+  /// Write bytes
   Future<bool> write(List<int> bytes){
     // TODO have a real c implementation for send by bytes
     final writes = bytes.map((byte) => _writeOneByte(byte));
@@ -102,6 +105,7 @@ class SerialPort {
     return completer.future;
   }
 
+  /// Read data send from the serial port
   Stream<List<int>> get onRead {
     StreamController<String> controller = new StreamController();
     _onReadControllers.add(controller);
