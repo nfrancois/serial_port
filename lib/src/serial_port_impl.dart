@@ -28,8 +28,8 @@ class SerialPort {
     if(_ttyFd != -1){
       throw new StateError("$portname is yet open.");
     }
-    var replyPort = new ReceivePort();
-    var completer = new Completer<bool>();
+    final replyPort = new ReceivePort();
+    final completer = new Completer<bool>();
     _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portname, baudrate, databits]);
     replyPort.first.then((List result) {
       if (result[0] == null) {
@@ -51,8 +51,8 @@ class SerialPort {
 
   Future<bool> close(){
     _checkOpen();
-    var completer = new Completer<bool>();
-    var replyPort = new ReceivePort();
+    final completer = new Completer<bool>();
+    final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _CLOSE_METHOD, _ttyFd]);
     replyPort.first.then((List result) {
       if (result[0] == null) {
@@ -68,8 +68,8 @@ class SerialPort {
   // TODO rename sendString ?
   Future<bool> writeString(String data){
     _checkOpen();
-    var completer = new Completer<bool>();
-    var replyPort = new ReceivePort();
+    final completer = new Completer<bool>();
+    final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data]);
     replyPort.first.then((result) {
       if (result[0] == null) {
@@ -89,8 +89,8 @@ class SerialPort {
 
   Future<bool> _writeOneByte(int byte){
     _checkOpen();
-    var completer = new Completer<bool>();
-    var replyPort = new ReceivePort();
+    final completer = new Completer<bool>();
+    final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_BYTE_METHOD, _ttyFd, byte]);
     replyPort.first.then((result) {
       if (result[0] == null) {
