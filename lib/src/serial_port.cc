@@ -17,6 +17,7 @@ Dart_Handle HandleError(Dart_Handle handle);
 
 
 enum METHOD_CODE {
+  TEST_PORT = 0,
   OPEN = 1,
   CLOSE = 2,
   READ = 3,
@@ -105,6 +106,23 @@ int selectDataBits(int dataBits) {
     case 8: return CS8;
     default: return -1;
   }
+}
+
+DECLARE_DART_NATIVE_METHOD(native_test_port){
+  DECLARE_DART_RESULT;
+  const char* portname = GET_STRING_ARG(0);
+
+  bool valid = false;
+  int tty_fd = open(portname, O_RDONLY|O_NONBLOCK);
+
+  if (tty_fd>0){
+    valid = true;
+  	close(tty_fd);
+  }
+  SET_RESULT_BOOL(valid);
+
+  RETURN_DART_RESULT;
+
 }
 
 DECLARE_DART_NATIVE_METHOD(native_open){
@@ -236,6 +254,9 @@ DECLARE_DART_NATIVE_METHOD(native_read){
 
 DISPATCH_METHOD()
   SWITCH_METHOD_CODE {
+    case TEST_PORT:
+      CALL_DART_NATIVE_METHOD(native_test_port);
+      break;
     case OPEN :
       CALL_DART_NATIVE_METHOD(native_open);
       break;

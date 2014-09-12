@@ -5,6 +5,7 @@ part of serial_port;
 class SerialPort {
 
   // TODO wait for enum
+  static const int _TEST_PORT = 0;
   static const int _OPEN_METHOD = 1;
   static const int _CLOSE_METHOD = 2;
   static const int _READ_METHOD = 3;
@@ -23,6 +24,50 @@ class SerialPort {
   int _ttyFd = -1;
 
   SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8});
+
+  /// List all avaible port names
+  static Future<List<String>> get avaiblePortNames {
+    final Completer<List<String>> completer = new Completer();
+    _systemPortNames.then((List<String> portnames) {
+       final Iterable<List<bool>> areAvaibles = portnames.map(_isAvaiblePortName);
+       Future.wait(areAvaibles).then((avaibility){
+         completer.complete(avaibility.where((p) => p.isAvaible).map((p) => p.portname).toList());
+       });
+    });
+    return completer.future;
+  }
+
+  /// List of potential portname depending for OS.
+  static Future<List<String>> get _systemPortNames {
+    var portNamesWildCart;
+    if(Platform.isMacOS) {
+      portNamesWildCart = "/dev/tty.*";
+    } else if(Platform.isLinux){
+      portNamesWildCart = "/dev/ttyS*";
+    } else {
+      throw new UnsupportedError("Cannot find serial port for this OS");
+    }
+    return Process.run('/bin/sh', ['-c', 'ls $portNamesWildCart'])
+                  .then((ProcessResult results) => results.stdout
+                                                          .split('\n')
+                                                          .where((String name) => name.isNotEmpty)
+                                                          .toList());
+  }
+
+  /// Ask to system if port name is avaible
+  static Future<_PortNameAvailability> _isAvaiblePortName(String portname){
+    final replyPort = new ReceivePort();
+    final completer = new Completer<bool>();
+    _servicePort.send([replyPort.sendPort, _TEST_PORT, portname, portname]);
+    replyPort.first.then((List result) {
+      if (result[0] == null) {
+        completer.complete(new _PortNameAvailability(portname, result[1]));
+      } else {
+        completer.complete(new _PortNameAvailability(portname, false));
+      }
+    });
+    return completer.future;
+  }
 
   /// Open the connection with serial port.
   Future<bool> open() {
@@ -85,7 +130,6 @@ class SerialPort {
 
   /// Write bytes
   Future<bool> write(List<int> bytes){
-    // TODO have a real c implementation for send by bytes
     final writes = bytes.map((byte) => _writeOneByte(byte));
     return Future.wait(writes, eagerError: true).then((_) => true);
   }
@@ -145,13 +189,21 @@ class SerialPort {
 
   static SendPort _port;
 
-  SendPort get _servicePort {
+  static SendPort get _servicePort {
     if (_port == null) {
       _port = _newServicePort();
     }
     return _port;
   }
 
-  SendPort _newServicePort() native "serialPortServicePort";
+  static SendPort _newServicePort() native "serialPortServicePort";
 
+}
+
+/// Wrap a portname and it avaible result;
+class _PortNameAvailability {
+  final String portname;
+  final bool isAvaible;
+
+  _PortNameAvailability(this.portname, this.isAvaible);
 }
