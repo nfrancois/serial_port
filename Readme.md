@@ -4,6 +4,7 @@
 
 
 SerialPort is a Dart Api to provide access read and write access to serial port.
+Sorry, Windows is not (yet) supported.
 
 Inspiration come from [node-serialport](https://github.com/voodootikigod/node-serialport).
 
@@ -82,14 +83,26 @@ void loop(){
   }
 }
 ```
+### List connected serial ports
 
+```Dart
+
+import 'package:serial_port/serial_port.dart';
+import 'dart:async';
+
+main(){
+  SerialPort.avaiblePortNames.then((portnames) {
+  	print("${portnames.length} devices founded:");
+    portnames.forEach((device) => print(">$device"));
+  });
+}
+
+
+```
 
 # Nexts developments
 
-* Use byte array instead of string to write on serial port.
+* Have a better implementation for writing bytes.
 * Wait for `TODO(turnidge): Currently handle_concurrently is ignored`from Dart VM.
 * Support serial port communication parameter like (parity, stopbits, FLOWCONTROLS, ...).
-* Look for using [](native_extension_with_build_tools)https://github.com/mezoni/native_extension_with_build_tools) ?
-* Write a transformer to compile if not exists.
-* Detect connected devices
-
+* Look for using [native_extension_with_build_tools]https://github.com/mezoni/native_extension_with_build_tools) ?
