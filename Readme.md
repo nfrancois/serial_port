@@ -1,4 +1,4 @@
-#SerialPort
+#Serial Port
 
 [![Build Status](https://drone.io/github.com/nfrancois/SerialPort/status.png)](https://drone.io/github.com/nfrancois/SerialPort/latest)
 
