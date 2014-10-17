@@ -16,6 +16,8 @@
 // TODO Dart_NewNativePort currently not support concurrently : https://github.com/dart-lang/bleeding_edge/blob/master/dart/runtime/include/dart_native_api.h
 // TODO auto_setup_scope
 
+// Most of this file come from https://github.com/piif/pdf-dart/blob/master/lib/src/dartNativeHelpers.h
+
 #define DECLARE_DART_RESULT                         \
  Dart_CObject result;                               \
  Dart_CObject resultDetail[2];                      \

@@ -10,3 +10,4 @@ pubspec.lock
 .project
 .idea
 *.iml
+.pub
