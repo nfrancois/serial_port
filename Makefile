@@ -4,7 +4,7 @@ clean:
 	rm -rf lib/src/libserial_port*.*
 
 build:
-	dart build.dart
+	dart bin/compile.dart
 
 run_test:
 	dart test/test_serial_port.dart
