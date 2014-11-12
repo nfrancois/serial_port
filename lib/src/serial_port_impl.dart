@@ -71,7 +71,7 @@ class SerialPort {
   /// Ask to system if port name is avaible
   static Future<_PortNameAvailability> _isAvaiblePortName(String portname){
     final replyPort = new ReceivePort();
-    final completer = new Completer<bool>();
+    final completer = new Completer<_PortNameAvailability>();
     _servicePort.send([replyPort.sendPort, _TEST_PORT, portname, portname]);
     replyPort.first.then((List result) {
       if (result[0] == null) {
