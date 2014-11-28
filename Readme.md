@@ -6,7 +6,8 @@
 SerialPort is a Dart Api to provide access read and write access to serial port.
 Sorry, Windows is not (yet) supported.
 
-Inspiration come from [node-serialport](https://github.com/voodootikigod/node-serialport).
+Inspiration come from [node-serialport](https://github.com/voodootikigod/node-serialport) and [node-arduino-firmata]
+(https://github.com/shokai/node-arduino-firmata).
 
 ## Compilation
 
