@@ -43,7 +43,7 @@ class SerialPort {
   static Future<List<String>> get avaiblePortNames {
     final Completer<List<String>> completer = new Completer();
     _systemPortNames.then((List<String> portnames) {
-       final Iterable<List<bool>> areAvaibles = portnames.map(_isAvaiblePortName);
+       final Iterable<Future<_PortNameAvailability>> areAvaibles = portnames.map(_isAvaiblePortName);
        Future.wait(areAvaibles).then((avaibility){
          completer.complete(avaibility.where((p) => p.isAvaible).map((p) => p.portname).toList());
        });
