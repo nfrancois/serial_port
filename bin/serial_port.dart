@@ -1,3 +1,5 @@
+#!/usr/bin/env dart
+
 // Copyright (c) 2014, Nicolas François
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,24 +14,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-library ccompile.example.example_build;
+library serial_port.script;
 
 import 'dart:io';
 import 'package:ccompile/ccompile.dart';
 import 'package:path/path.dart' as pathos;
+import '../lib/serial_port.dart';
 
-void main(List<String> args) {
-  Program.main('lib/src/serial_port.yaml');
+/// serial_port list
+/// serial_port compile
+void main(List<String> args){
+  if(args.length != 1){
+    invalidCommand();
+  }
+  final command = args[0];
+  if(command=="compile"){
+    Compiler.main('$scriptDirectory/../lib/src/serial_port.yaml');
+  } else if(command=="list") {
+    SerialPort.avaiblePortNames.then((List<String> results) => print(results.join("\n")));
+  } else {
+    invalidCommand();
+  }
+
 }
 
-class Program {
+void invalidCommand(){
+  stderr.writeln("Invalid command\nUsage:\nserial_port list\nserial_port compile");
+  exit(-1);
+}
+
+class Compiler {
   static void main(yaml_path) {
     var basePath = Directory.current.path;
     var projectPath = toAbsolutePath(yaml_path, basePath);
-    var result = Program.buildProject(projectPath, {
-      'start': 'Building project "$projectPath"',
-      'success': 'Building complete successfully',
-      'error': 'Building complete with some errors'});
+    var result = Compiler.buildProject(projectPath, {
+        'start': 'Building project "$projectPath"',
+        'success': 'Building complete successfully',
+        'error': 'Building complete with some errors'});
 
     exit(result);
   }
@@ -68,7 +89,8 @@ class Program {
     return pathos.absolute(path);
   }
 
-  static String getRootScriptDirectory() {
-    return pathos.dirname(Platform.script);
-  }
+}
+
+String get scriptDirectory {
+  return pathos.dirname(Platform.script.path);
 }
