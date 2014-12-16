@@ -53,15 +53,15 @@ class SerialPort {
 
   /// List of potential portname depending for OS.
   static Future<List<String>> get _systemPortNames {
-    var portNamesWildCart;
+    var wildCard;
     if(Platform.isMacOS) {
-      portNamesWildCart = "/dev/tty.*";
+      wildCard = "/dev/*.*";
     } else if(Platform.isLinux){
-      portNamesWildCart = "/dev/ttyS*";
+      wildCard = "/dev/ttyS*";
     } else {
       throw new UnsupportedError("Cannot find serial port for this OS");
     }
-    return Process.run('/bin/sh', ['-c', 'ls $portNamesWildCart'])
+    return Process.run('/bin/sh', ['-c', 'ls $wildCard'])
                   .then((ProcessResult results) => results.stdout
                                                           .split('\n')
                                                           .where((String name) => name.isNotEmpty)
