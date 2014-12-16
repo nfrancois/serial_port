@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import 'package:serial_port/serial_port.dart';
-import 'dart:async';
 
 main(){
   SerialPort.avaiblePortNames.then((portnames) {

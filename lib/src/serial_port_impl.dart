@@ -165,7 +165,7 @@ class SerialPort {
 
   /// Read data send from the serial port
   Stream<List<int>> get onRead {
-    StreamController<int> controller = new StreamController();
+    StreamController<List<int>> controller = new StreamController();
     _onReadControllers.add(controller);
     return controller.stream;
   }
@@ -173,7 +173,7 @@ class SerialPort {
   void _read(){
     _readPort = new RawReceivePort();
     _servicePort.send([_readPort.sendPort, _READ_METHOD, _ttyFd, 256]);
-    _readPort.handler = (List<int> result) {
+    _readPort.handler = (List result) {
       _closeReadPort();
       // TODO when  result[0] != null
       if(result[0] == null && result[1] != null){
