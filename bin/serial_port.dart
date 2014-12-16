@@ -19,8 +19,9 @@ library serial_port.script;
 import 'dart:io';
 import 'package:ccompile/ccompile.dart';
 import 'package:path/path.dart' as pathos;
-import '../lib/serial_port.dart';
+import 'package:serial_port/cli.dart' deferred as cli;
 
+/// Command list tools for serial port api
 /// serial_port list
 /// serial_port compile
 void main(List<String> args){
@@ -31,7 +32,9 @@ void main(List<String> args){
   if(command=="compile"){
     Compiler.main('$scriptDirectory/../lib/src/serial_port.yaml');
   } else if(command=="list") {
-    SerialPort.avaiblePortNames.then((List<String> results) => print(results.join("\n")));
+    cli.loadLibrary().then((_) {
+      cli.list();
+    });
   } else {
     invalidCommand();
   }

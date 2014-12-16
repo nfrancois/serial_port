@@ -45,14 +45,14 @@ void main() {
     test('Just close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
-                   .then((success) =>  expect(success, isTrue));
+                   .then((success) =>  expect(success, isNull));
     });
 
      test('Just write String', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.writeString("Hello"))
                    .then((success) {
-                      expect(success, isTrue);
+                      expect(success, isNull);
                       serial.close();
                    });
     });
