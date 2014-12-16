@@ -17,9 +17,10 @@
 library serial_port.script;
 
 import 'dart:io';
-import 'package:ccompile/ccompile.dart';
-import 'package:path/path.dart' as pathos;
 import 'package:serial_port/cli.dart' deferred as cli;
+import 'package:serial_port/compiler.dart' deferred as compiler;
+
+// TODO add a compilation checker
 
 /// Command list tools for serial port api
 /// serial_port list
@@ -30,7 +31,9 @@ void main(List<String> args){
   }
   final command = args[0];
   if(command=="compile"){
-    Compiler.main('$scriptDirectory/../lib/src/serial_port.yaml');
+    compiler.loadLibrary().then((_) {
+      compiler.compile();
+    });
   } else if(command=="list") {
     cli.loadLibrary().then((_) {
       cli.list();
@@ -44,56 +47,4 @@ void main(List<String> args){
 void invalidCommand(){
   stderr.writeln("Invalid command\nUsage:\nserial_port list\nserial_port compile");
   exit(-1);
-}
-
-class Compiler {
-  static void main(yaml_path) {
-    var basePath = Directory.current.path;
-    var projectPath = toAbsolutePath(yaml_path, basePath);
-    var result = Compiler.buildProject(projectPath, {
-        'start': 'Building project "$projectPath"',
-        'success': 'Building complete successfully',
-        'error': 'Building complete with some errors'});
-
-    exit(result);
-  }
-
-  static int buildProject(projectPath, Map messages) {
-    var workingDirectory = pathos.dirname(projectPath);
-    var message = messages['start'];
-    if(!message.isEmpty) {
-      print(message);
-    }
-
-    var builder = new ProjectBuilder();
-    var project = builder.loadProject(projectPath);
-    var result = builder.buildAndClean(project, workingDirectory);
-    if(result.exitCode == 0) {
-      var message = messages['success'];
-      if(!message.isEmpty) {
-        print(message);
-      }
-    } else {
-      var message = messages['error'];
-      if(!message.isEmpty) {
-        print(message);
-      }
-    }
-
-    return result.exitCode == 0 ? 0 : 1;
-  }
-
-  static String toAbsolutePath(String path, String base) {
-    if(pathos.isAbsolute(path)) {
-      return path;
-    }
-
-    path = pathos.join(base, path);
-    return pathos.absolute(path);
-  }
-
-}
-
-String get scriptDirectory {
-  return pathos.dirname(Platform.script.path);
 }
