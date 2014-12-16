@@ -84,7 +84,7 @@ class SerialPort {
   }
 
   /// Open the connection with serial port.
-  Future<bool> open() {
+  Future open() {
     if(_ttyFd != -1){
       throw new StateError("$portname is yet open.");
     }
@@ -110,7 +110,7 @@ class SerialPort {
   int get fd => _ttyFd;
 
   /// Close the connection.
-  Future<bool> close(){
+  Future close(){
     _checkOpen();
     final completer = new Completer<bool>();
     final replyPort = new ReceivePort();
@@ -118,7 +118,7 @@ class SerialPort {
     replyPort.first.then((List result) {
       if (result[0] == null) {
         _ttyFd = -1;
-        completer.complete(true);
+        completer.complete();
       } else {
         completer.completeError("Cannot close $portname : ${result[0]}");
       }
@@ -127,14 +127,14 @@ class SerialPort {
   }
 
   /// Write as a string
-  Future<bool> writeString(String data){
+  Future writeString(String data){
     _checkOpen();
     final completer = new Completer<bool>();
     final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data]);
     replyPort.first.then((result) {
       if (result[0] == null) {
-        completer.complete(true);
+        completer.complete();
       } else {
         completer.completeError("Cannot write in $portname : ${result[0]}");
       }
@@ -143,19 +143,19 @@ class SerialPort {
   }
 
   /// Write bytes
-  Future<bool> write(List<int> bytes){
+  Future write(List<int> bytes){
     final writes = bytes.map((byte) => _writeOneByte(byte));
     return Future.wait(writes, eagerError: true).then((_) => true);
   }
 
-  Future<bool> _writeOneByte(int byte){
+  Future _writeOneByte(int byte){
     _checkOpen();
     final completer = new Completer<bool>();
     final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_BYTE_METHOD, _ttyFd, byte]);
     replyPort.first.then((result) {
       if (result[0] == null) {
-        completer.complete(true);
+        completer.complete();
       } else {
         completer.completeError("Cannot write in $portname : ${result[0]}");
       }
@@ -165,7 +165,7 @@ class SerialPort {
 
   /// Read data send from the serial port
   Stream<List<int>> get onRead {
-    StreamController<String> controller = new StreamController();
+    StreamController<int> controller = new StreamController();
     _onReadControllers.add(controller);
     return controller.stream;
   }
