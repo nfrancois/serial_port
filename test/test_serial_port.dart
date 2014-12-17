@@ -33,7 +33,7 @@ void main() {
     });
     tearDown(() => dummySerialPort.delete());
 
-    test('Just open', () {
+    test('Open', () {
       var serial =  new SerialPort(dummySerialPort.path, baudrate: 9600);
       serial.open().then((success) {
         expect(success, isTrue);
@@ -42,13 +42,13 @@ void main() {
 	  });
 
 
-    test('Just close', () {
+    test('Close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
                    .then((success) =>  expect(success, isNull));
     });
 
-     test('Just write String', () {
+     test('Write String', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.writeString("Hello"))
                    .then((success) {
@@ -57,13 +57,24 @@ void main() {
                    });
     });
 
-    test('Just write bytes', () {
+    test('Write bytes', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.write([72, 101, 108, 108, 111]))
                    .then((success) {
                       expect(success, isTrue);
                       serial.close();
                    });
+    });
+
+    test('Read bytes', (){
+      var serial =  new SerialPort(dummySerialPort.path);
+      dummySerialPort.writeAsStringSync("Hello");
+      serial.open().then((_){
+        serial.onRead.first.then((List<int> bytes) {
+          expect(bytes, "Hello".codeUnits);
+          serial.close();
+        });
+      });
     });
 
     test('Defaut baudrate 9600', () {
@@ -81,7 +92,7 @@ void main() {
       serial.open().catchError((error) => expect(error, "Cannot open dummySerialPort.tmp : Invalid baudrate"));
     });
 
-  });
+ });
 
 
 }
