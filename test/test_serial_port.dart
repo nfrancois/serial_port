@@ -35,8 +35,9 @@ void main() {
 
     test('Open', () {
       var serial =  new SerialPort(dummySerialPort.path, baudrate: 9600);
-      serial.open().then((success) {
-        expect(success, isTrue);
+      serial.open().then((_) {
+        expect(serial.fd!=-1, isTrue);
+        expect(serial.isOpen, isTrue);
         serial.close();
       });
 	  });
@@ -45,7 +46,10 @@ void main() {
     test('Close', () {
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_) => serial.close())
-                   .then((success) =>  expect(success, isNull));
+                   .then((success) {
+                      expect(serial.fd==-1, isTrue);
+                      expect(serial.isOpen, isFalse);
+      });
     });
 
      test('Write String', () {
