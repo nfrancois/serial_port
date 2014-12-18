@@ -80,25 +80,26 @@ void main() {
                       serial.close();
                    });
     });
-
-    /*
+    /* */
     test('Read bytes', (){
       var serial =  new SerialPort(dummySerialPort.path);
+
+      final t = new Timer(new Duration(seconds: 1), () {
+        fail('event not fired in time');
+      });
+
       serial.open().then((_){
         serial.onRead.first.then((List<int> bytes) {
           expect(bytes, "Hello".codeUnits);
           serial.close();
+          t.cancel();
         });
-      });
-
-      new Timer(new Duration(seconds: 1), () {
-        fail('event not fired in time');
       });
 
       // when
       dummySerialPort.writeAsStringSync("Hello");
     });
-    */
+
 
     test('Defaut baudrate 9600', () {
       var serial =  new SerialPort(dummySerialPort.path);
