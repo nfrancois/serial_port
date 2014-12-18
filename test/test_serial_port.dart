@@ -77,6 +77,19 @@ void main() {
       });
     });
 
+    /*
+    test('Read bytes', (){
+      var serial =  new SerialPort(dummySerialPort.path);
+      serial.open().then((_){
+        serial.onRead.first.then((List<int> bytes) {
+          expect(bytes, "Hello".codeUnits);
+          serial.close();
+        });
+        dummySerialPort..writeAsStringSync("Hello");
+      });
+    });
+    */
+
     test('Defaut baudrate 9600', () {
       var serial =  new SerialPort(dummySerialPort.path);
       expect(serial.baudrate, 9600);
