@@ -81,6 +81,7 @@ void main() {
                    });
     });
 
+    /*
     test('Read bytes', (){
       var serial =  new SerialPort(dummySerialPort.path);
       serial.open().then((_){
@@ -97,6 +98,7 @@ void main() {
       // when
       dummySerialPort.writeAsStringSync("Hello");
     });
+    */
 
     test('Defaut baudrate 9600', () {
       var serial =  new SerialPort(dummySerialPort.path);
