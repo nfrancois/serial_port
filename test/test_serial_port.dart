@@ -116,6 +116,13 @@ void main() {
       serial.open().catchError((error) => expect(error, "Cannot open dummySerialPort.tmp : Invalid baudrate"));
     });
 
+    test('Fail when open twice', (){
+      var serial =  new SerialPort(dummySerialPort.path);
+      serial.open().then((_) {
+        serial.open().catchError((error) => expect(error, "${dummySerialPort.path} is yet open"));
+      }).then((_) => serial.close());
+    });
+
  });
 
 

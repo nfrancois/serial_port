@@ -85,11 +85,12 @@ class SerialPort {
 
   /// Open the connection with serial port.
   Future open() {
+    final completer = new Completer<bool>();
     if(_ttyFd != -1){
-      throw new StateError("$portname is yet open.");
+      completer.completeError("$portname is yet open");
+      return completer.future;
     }
     final replyPort = new ReceivePort();
-    final completer = new Completer<bool>();
     _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portname, baudrate, databits]);
     replyPort.first.then((List result) {
       if (result[0] == null) {
