@@ -123,6 +123,21 @@ void main() {
       }).then((_) => serial.close());
     });
 
+    test('Fail when close and not open', (){
+      var serial =  new SerialPort(dummySerialPort.path);
+      serial.close().catchError((error) => expect(error, "${dummySerialPort.path} is not open"));
+    });
+
+    test('Fail when writeString and not open', (){
+      var serial =  new SerialPort(dummySerialPort.path);
+      serial.writeString("Hello").catchError((error) => expect(error, "${dummySerialPort.path} is not open"));
+    });
+
+    test('Fail when write and not open', (){
+      var serial =  new SerialPort(dummySerialPort.path);
+      serial.write("Hello".codeUnits).catchError((error) => expect(error, "${dummySerialPort.path} is not open"));
+    });
+
  });
 
 

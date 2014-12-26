@@ -112,8 +112,11 @@ class SerialPort {
 
   /// Close the connection.
   Future close(){
-    _checkOpen();
     final completer = new Completer<bool>();
+    if(_ttyFd == -1){
+      completer.completeError("$portname is not open");
+      return completer.future;
+    }
     final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _CLOSE_METHOD, _ttyFd]);
     replyPort.first.then((List result) {
@@ -131,8 +134,11 @@ class SerialPort {
 
   /// Write as a string
   Future writeString(String data){
-    _checkOpen();
     final completer = new Completer<bool>();
+    if(_ttyFd == -1){
+      completer.completeError("$portname is not open");
+      return completer.future;
+    }
     final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data]);
     replyPort.first.then((result) {
@@ -152,8 +158,11 @@ class SerialPort {
   }
 
   Future _writeOneByte(int byte){
-    _checkOpen();
     final completer = new Completer<bool>();
+    if(_ttyFd == -1){
+      completer.completeError("$portname is not open");
+      return completer.future;
+    }
     final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_BYTE_METHOD, _ttyFd, byte]);
     replyPort.first.then((result) {
@@ -189,12 +198,6 @@ class SerialPort {
     if(_readPort != null){
       _readPort.close();
       _readPort = null;
-    }
-  }
-
-  void _checkOpen(){
-    if(_ttyFd == -1){
-      throw new StateError("$portname is not open.");
     }
   }
 
