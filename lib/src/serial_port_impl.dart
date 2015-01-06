@@ -33,7 +33,6 @@ class SerialPort {
   final int databits;
 
   final StreamController<List<int>> _onReadController = new StreamController<List<int>>();
-  RawReceivePort _readPort  = null;
 
   int _ttyFd = -1;
 
@@ -121,7 +120,6 @@ class SerialPort {
     _servicePort.send([replyPort.sendPort, _CLOSE_METHOD, _ttyFd]);
     replyPort.first.then((List result) {
       _onReadController.close();
-      _closeReadPort();
       if (result[0] == null) {
         _ttyFd = -1;
         completer.complete();
@@ -179,25 +177,16 @@ class SerialPort {
   Stream<List<int>> get onRead => _onReadController.stream;
 
   void _read(){
-    _readPort = new RawReceivePort();
-    _servicePort.send([_readPort.sendPort, _READ_METHOD, _ttyFd, 256]);
-    _readPort.handler = (List result) {
-      _closeReadPort();
-      // TODO when  result[0] != null
-      if(result[0] == null && result[1] != null){
-        _onReadController.add(result[1]);
-      }
-      // Continue to read
-      if(_ttyFd != -1){
+    if(isOpen){
+      final _readPort = new ReceivePort();
+      _servicePort.send([_readPort.sendPort, _READ_METHOD, _ttyFd, 256]);
+      _readPort.first.then((List result){
+        if (result[0] == null && result[1] != null && !_onReadController.isClosed) {
+          _onReadController.add(result[1]);
+        }
+        // Continue to read
         _read();
-      }
-    };
-  }
-
-  void _closeReadPort(){
-    if(_readPort != null){
-      _readPort.close();
-      _readPort = null;
+      });
     }
   }
 
