@@ -16,18 +16,26 @@ library test_serial_port;
 
 import 'package:unittest/unittest.dart';
 import 'package:serial_port/serial_port.dart';
+import 'package:unittest/vm_config.dart';
 import 'dart:io';
 import 'dart:math';
 import 'dart:async';
 
 void main() {
+
+  useVMConfiguration();
+
   File dummySerialPort;
   Random random = new Random();
+
   group('Util', (){
+
     test('Convert bytes to string', (){
       expect(BYTES_TO_STRING([72, 101, 108, 108, 111]), "Hello");
     });
+
   });
+
   group('Serial port', () {
     setUp(() {
       dummySerialPort = new File("dummySerialPort.tmp");
@@ -35,14 +43,12 @@ void main() {
     });
     tearDown(() => dummySerialPort.delete());
 
-    /*
     test('Detect serial port', (){
       SerialPort.avaiblePortNames.then((names){
         // Not easy to have test for all Plateform. The minimal requiment is nothing detected
         expect(names, isNotNull);
       });
     });
-    */
 
     test('Open', () {
       var serial =  new SerialPort(dummySerialPort.path, baudrate: 9600);
@@ -80,26 +86,34 @@ void main() {
                       serial.close();
                    });
     });
-    /* */
+
     test('Read bytes', (){
-      var serial =  new SerialPort(dummySerialPort.path);
+      File anotherDummySerialPort = new File("dummySerialPort-read.tmp");
+
+      var serial =  new SerialPort(anotherDummySerialPort.path);
 
       final t = new Timer(new Duration(seconds: 1), () {
+        print("fail");
+        print("${serial.fd}");
+        if(serial.isOpen){
+          serial.close();
+        }
         fail('event not fired in time');
       });
 
-      serial.open().then((_){
-        serial.onRead.first.then((List<int> bytes) {
-          expect(bytes, "Hello".codeUnits);
-          serial.close();
-          t.cancel();
+
+      anotherDummySerialPort.writeAsString("Hello").then((_) {
+        serial.open().then((_) {
+          serial.onRead.first.then((List<int> bytes) {
+            serial.close();
+            t.cancel();
+            expect(bytes, "Hello".codeUnits);
+          });
+
         });
       });
 
-      // when
-      dummySerialPort.writeAsStringSync("Hello");
     });
-
 
     test('Defaut baudrate 9600', () {
       var serial =  new SerialPort(dummySerialPort.path);
@@ -122,6 +136,7 @@ void main() {
         serial.open().catchError((error) => expect(error, "${dummySerialPort.path} is yet open"));
       }).then((_) => serial.close());
     });
+
 
     test('Fail when close and not open', (){
       var serial =  new SerialPort(dummySerialPort.path);
