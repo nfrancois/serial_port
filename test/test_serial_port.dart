@@ -24,7 +24,7 @@ import 'package:mockable_filesystem/mock_filesystem.dart';
 
 void main() {
 
-  useVMConfiguration();
+  //useVMConfiguration();
 
   group('Util', (){
 
