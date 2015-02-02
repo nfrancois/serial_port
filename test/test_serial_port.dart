@@ -19,12 +19,9 @@ import 'dart:math';
 import 'dart:async';
 import 'package:unittest/unittest.dart';
 import 'package:serial_port/serial_port.dart';
-import 'package:unittest/vm_config.dart';
-import 'package:mockable_filesystem/mock_filesystem.dart';
+
 
 void main() {
-
-  //useVMConfiguration();
 
   group('Util', (){
 
@@ -36,15 +33,13 @@ void main() {
 
   group('Serial port', () {
 
-    File portNameFile;
     String portName;
 
     setUp(() {
-      fileSystem = new MockFileSystem();
-      fileSystem.getDirectory("/dev").createSync();
-      portName = "/dev/tty-usb-device-${new Random().nextInt(99999999)}";
-      portNameFile = fileSystem.getFile(portName);
-      return portNameFile.create();
+      return Directory.systemTemp.createTemp('serial_port_test').then((testDir){
+        portName = "${testDir.path}/tty-usb-device-${new Random().nextInt(99999999)}";
+        return new File(portName).create();
+      });
     });
 
     test('Detect serial port', (){
@@ -55,25 +50,24 @@ void main() {
     });
 
     test('Open', () {
-      var serial =  new SerialPort(portNameFile.path, baudrate: 9600);
+      var serial =  new SerialPort(portName, baudrate: 9600);
       serial.open().then((_) {
-        expect(serial.fd!=-1, isTrue);
-        expect(serial.isOpen, isTrue);
+        expect(serial.fd!=-1, true);
+        expect(serial.isOpen, true);
         serial.close();
       });
 	  });
-
 
     test('Close', () {
       var serial =  new SerialPort(portName);
       serial.open().then((_) => serial.close())
                    .then((success) {
-                      expect(serial.fd==-1, isTrue);
-                      expect(serial.isOpen, isFalse);
+                      expect(serial.fd, -1);
+                      expect(serial.isOpen, false);
       });
     });
 
-     test('Write String', () {
+    test('Write String', () {
       var serial =  new SerialPort(portName);
       serial.open().then((_) => serial.writeString("Hello"))
                    .then((success) {
@@ -86,7 +80,7 @@ void main() {
       var serial =  new SerialPort(portName);
       serial.open().then((_) => serial.write([72, 101, 108, 108, 111]))
                    .then((success) {
-                      expect(success, isTrue);
+                      expect(success, true);
                       serial.close();
                    });
     });
@@ -94,9 +88,7 @@ void main() {
     test('Read bytes', (){
       var serial =  new SerialPort(portName);
 
-      final t = new Timer(new Duration(seconds: 1), () {
-        print("fail");
-        print("${serial.fd}");
+      final t = new Timer(new Duration(seconds: 2), () {
         if(serial.isOpen){
           serial.close();
         }
@@ -105,14 +97,14 @@ void main() {
 
       serial.open().then((_) {
         serial.onRead.first.then((List<int> bytes) {
-          serial.close();
           t.cancel();
+          serial.close();
           expect(bytes, "Hello".codeUnits);
         });
 
       });
 
-      portNameFile.writeAsStringSync("Hello");
+      new File(portName).writeAsStringSync("Hello");
 
     });
 
@@ -121,40 +113,39 @@ void main() {
       expect(serial.baudrate, 9600);
     });
 
-     test('Fail with unkwnon portname', (){
+    test('Fail with unkwnon portname', (){
       var serial = new SerialPort("notExist");
       serial.open().catchError((error) => expect(error, "Cannot open notExist : Invalid access"));
     });
 
     test('Fail with unkwnon baudrate', (){
       var serial = new SerialPort(portName, baudrate: 1);
-      serial.open().catchError((error) => expect(error, "Cannot open dummySerialPort.tmp : Invalid baudrate"));
+      serial.open().catchError((error) => expect(error, "Cannot open ${portName} : Invalid baudrate"));
     });
 
     test('Fail when open twice', (){
       var serial =  new SerialPort(portName);
       serial.open().then((_) {
-        serial.open().catchError((error) => expect(error, "${portNameFile.path} is yet open"));
+        serial.open().catchError((error) => expect(error, "${portName} is yet open"));
       }).then((_) => serial.close());
     });
 
 
     test('Fail when close and not open', (){
       var serial =  new SerialPort(portName);
-      serial.close().catchError((error) => expect(error, "${portNameFile.path} is not open"));
+      serial.close().catchError((error) => expect(error, "${portName} is not open"));
     });
 
     test('Fail when writeString and not open', (){
       var serial =  new SerialPort(portName);
-      serial.writeString("Hello").catchError((error) => expect(error, "${portNameFile.path} is not open"));
+      serial.writeString("Hello").catchError((error) => expect(error, "${portName} is not open"));
     });
 
     test('Fail when write and not open', (){
       var serial =  new SerialPort(portName);
-      serial.write("Hello".codeUnits).catchError((error) => expect(error, "${portNameFile.path} is not open"));
+      serial.write("Hello".codeUnits).catchError((error) => expect(error, "${portName} is not open"));
     });
 
  });
-
 
 }
