@@ -51,38 +51,38 @@ void main() {
 
     test('Open', () {
       var serial =  new SerialPort(portName, baudrate: 9600);
-      serial.open().then((_) {
+      serial.open().then(expectAsync((_) {
         expect(serial.fd!=-1, true);
         expect(serial.isOpen, true);
         serial.close();
-      });
+      }));
 	  });
 
     test('Close', () {
       var serial =  new SerialPort(portName);
       serial.open().then((_) => serial.close())
-                   .then((success) {
+                   .then(expectAsync((success) {
                       expect(serial.fd, -1);
                       expect(serial.isOpen, false);
-      });
+      }));
     });
 
     test('Write String', () {
       var serial =  new SerialPort(portName);
       serial.open().then((_) => serial.writeString("Hello"))
-                   .then((success) {
+                   .then(expectAsync((success) {
                       expect(success, isNull);
                       serial.close();
-                   });
+                   }));
     });
 
     test('Write bytes', () {
       var serial =  new SerialPort(portName);
       serial.open().then((_) => serial.write([72, 101, 108, 108, 111]))
-                   .then((success) {
+                   .then(expectAsync((success) {
                       expect(success, true);
                       serial.close();
-                   });
+                   }));
     });
 
     test('Read bytes', (){
@@ -96,11 +96,11 @@ void main() {
       });
 
       serial.open().then((_) {
-        serial.onRead.first.then((List<int> bytes) {
+        serial.onRead.first.then(expectAsync((List<int> bytes) {
           t.cancel();
           serial.close();
           expect(bytes, "Hello".codeUnits);
-        });
+        }));
 
       });
 
