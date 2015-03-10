@@ -15,8 +15,8 @@
 import 'package:serial_port/serial_port.dart';
 
 main(){
-  SerialPort.avaiblePortNames.then((portnames) {
-  	print("${portnames.length} devices founded:");
-    portnames.forEach((device) => print(">$device"));
+  SerialPort.availablePortNames.then((portNames) {
+    print("${portNames.length} devices founded:");
+    portNames.forEach((device) => print(">$device"));
   });
 }

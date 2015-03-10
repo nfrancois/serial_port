@@ -35,21 +35,27 @@ Output
 ```
 [SerialPort]> make
 rm -rf lib/src/libserial_port*.*
-dart build.dart
-Building project "/Users/nicolasfrancois/Documents/SerialPort/lib/src/serial_port.yaml"
+dart bin/serial_port.dart compile
+Building project "/Users/nicolasfrancois/Documents/dart-bots/serial_port/lib/src/serial_port.yaml"
 Building complete successfully
 dart test/test_serial_port.dart
 unittest-suite-wait-for-done
 PASS: Util Convert bytes to string
-PASS: Serial port Just open
-PASS: Serial port Just close
-PASS: Serial port Just write String
-PASS: Serial port Just write bytes
+PASS: Serial port Detect serial port
+PASS: Serial port Open
+PASS: Serial port Close
+PASS: Serial port Write String
+PASS: Serial port Write bytes
+PASS: Serial port Read bytes
 PASS: Serial port Defaut baudrate 9600
 PASS: Serial port Fail with unkwnon portname
 PASS: Serial port Fail with unkwnon baudrate
+PASS: Serial port Fail when open twice
+PASS: Serial port Fail when close and not open
+PASS: Serial port Fail when writeString and not open
+PASS: Serial port Fail when write and not open
 
-All 8 tests passed.
+All 14 tests passed.
 unittest-suite-success
 ```
 
@@ -93,9 +99,9 @@ import 'package:serial_port/serial_port.dart';
 import 'dart:async';
 
 main(){
-  SerialPort.avaiblePortNames.then((portnames) {
-  	print("${portnames.length} devices founded:");
-    portnames.forEach((device) => print(">$device"));
+  SerialPort.availablePortNames.then((portNames) {
+  	print("${portNames.length} devices founded:");
+    portNames.forEach((device) => print(">$device"));
   });
 }
 
@@ -107,4 +113,3 @@ main(){
 * Have a better implementation for writing bytes.
 * Wait for `TODO(turnidge): Currently handle_concurrently is ignored`from Dart VM.
 * Support serial port communication parameter like (parity, stopbits, FLOWCONTROLS, ...).
-* Look for using [native_extension_with_build_tools]https://github.com/mezoni/native_extension_with_build_tools) ?
