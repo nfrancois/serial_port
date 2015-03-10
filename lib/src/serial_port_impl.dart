@@ -28,7 +28,7 @@ class SerialPort {
 
   static const int _EOL = 10;
 
-  final String portname;
+  final String portName;
   final int baudrate;
   final int databits;
 
@@ -36,21 +36,21 @@ class SerialPort {
 
   int _ttyFd = -1;
 
-  SerialPort(this.portname, {this.baudrate : 9600, this.databits: 8});
+  SerialPort(this.portName, {this.baudrate : 9600, this.databits: 8});
 
-  /// List all avaible port names
-  static Future<List<String>> get avaiblePortNames {
+  /// List all available port names
+  static Future<List<String>> get availablePortNames {
     final Completer<List<String>> completer = new Completer();
-    _systemPortNames.then((List<String> portnames) {
-       final Iterable<Future<_PortNameAvailability>> areAvaibles = portnames.map(_isAvaiblePortName);
-       Future.wait(areAvaibles).then((avaibility){
-         completer.complete(avaibility.where((p) => p.isAvaible).map((p) => p.portname).toList());
+    _systemPortNames.then((List<String> portNames) {
+       final Iterable<Future<_PortNameAvailability>> areAvailable = portNames.map(_isAvailablePortName);
+       Future.wait(areAvailable).then((availability){
+         completer.complete(availability.where((p) => p.isAvailable).map((p) => p.portName).toList());
        });
     });
     return completer.future;
   }
 
-  /// List of potential portname depending for OS.
+  /// List of potential portName depending for OS.
   static Future<List<String>> get _systemPortNames {
     var wildCard;
     if(Platform.isMacOS) {
@@ -68,15 +68,15 @@ class SerialPort {
   }
 
   /// Ask to system if port name is avaible
-  static Future<_PortNameAvailability> _isAvaiblePortName(String portname){
+  static Future<_PortNameAvailability> _isAvailablePortName(String portName){
     final replyPort = new ReceivePort();
     final completer = new Completer<_PortNameAvailability>();
-    _servicePort.send([replyPort.sendPort, _TEST_PORT, portname, portname]);
+    _servicePort.send([replyPort.sendPort, _TEST_PORT, portName, portName]);
     replyPort.first.then((List result) {
       if (result[0] == null) {
-        completer.complete(new _PortNameAvailability(portname, result[1]));
+        completer.complete(new _PortNameAvailability(portName, result[1]));
       } else {
-        completer.complete(new _PortNameAvailability(portname, false));
+        completer.complete(new _PortNameAvailability(portName, false));
       }
     });
     return completer.future;
@@ -86,18 +86,18 @@ class SerialPort {
   Future open() {
     final completer = new Completer<bool>();
     if(_ttyFd != -1){
-      completer.completeError("$portname is yet open");
+      completer.completeError("$portName is yet open");
       return completer.future;
     }
     final replyPort = new ReceivePort();
-    _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portname, baudrate, databits]);
+    _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portName, baudrate, databits]);
     replyPort.first.then((List result) {
       if (result[0] == null) {
         _ttyFd = result[1];
         _read();
         completer.complete(true);
       } else {
-        completer.completeError("Cannot open $portname : ${result[0]}");
+        completer.completeError("Cannot open $portName : ${result[0]}");
       }
     });
     return completer.future;
@@ -113,7 +113,7 @@ class SerialPort {
   Future close(){
     final completer = new Completer<bool>();
     if(_ttyFd == -1){
-      completer.completeError("$portname is not open");
+      completer.completeError("$portName is not open");
       return completer.future;
     }
     final replyPort = new ReceivePort();
@@ -124,7 +124,7 @@ class SerialPort {
         _ttyFd = -1;
         completer.complete();
       } else {
-        completer.completeError("Cannot close $portname : ${result[0]}");
+        completer.completeError("Cannot close $portName : ${result[0]}");
       }
     });
     return completer.future;
@@ -134,7 +134,7 @@ class SerialPort {
   Future writeString(String data){
     final completer = new Completer<bool>();
     if(_ttyFd == -1){
-      completer.completeError("$portname is not open");
+      completer.completeError("$portName is not open");
       return completer.future;
     }
     final replyPort = new ReceivePort();
@@ -143,7 +143,7 @@ class SerialPort {
       if (result[0] == null) {
         completer.complete();
       } else {
-        completer.completeError("Cannot write in $portname : ${result[0]}");
+        completer.completeError("Cannot write in $portName : ${result[0]}");
       }
     });
     return completer.future;
@@ -158,7 +158,7 @@ class SerialPort {
   Future _writeOneByte(int byte){
     final completer = new Completer<bool>();
     if(_ttyFd == -1){
-      completer.completeError("$portname is not open");
+      completer.completeError("$portName is not open");
       return completer.future;
     }
     final replyPort = new ReceivePort();
@@ -167,7 +167,7 @@ class SerialPort {
       if (result[0] == null) {
         completer.complete();
       } else {
-        completer.completeError("Cannot write in $portname : ${result[0]}");
+        completer.completeError("Cannot write in $portName : ${result[0]}");
       }
     });
     return completer.future;
@@ -207,8 +207,8 @@ class SerialPort {
 
 /// Wrap a portname and it avaible result;
 class _PortNameAvailability {
-  final String portname;
-  final bool isAvaible;
+  final String portName;
+  final bool isAvailable;
 
-  _PortNameAvailability(this.portname, this.isAvaible);
+  _PortNameAvailability(this.portName, this.isAvailable);
 }

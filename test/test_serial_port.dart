@@ -43,8 +43,8 @@ void main() {
     });
 
     test('Detect serial port', (){
-      SerialPort.avaiblePortNames.then((names){
-        // Not easy to have test for all Plateform. The minimal requiment is nothing detected
+      SerialPort.availablePortNames.then((names){
+        // Not easy to have test for all Platform. The minimal requirement is nothing detected
         expect(names, isNotNull);
       });
     });
