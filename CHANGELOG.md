@@ -1,3 +1,7 @@
+#### 0.2.2
+  * Rewrite tests with `expectAsync` and remove mock files from 0.2.1
+  * Fix naming typo
+
 #### 0.2.1
   * Use [Mockable File](https://pub.dartlang.org/packages/mockable_filesystem) for testing
   * Increase test coverage
