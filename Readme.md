@@ -28,35 +28,14 @@ Yes, it must be compiled because it's a VM extension, depending of execution pla
 pub get
 ```
 
-* Run `make`, cc files will be compiled, and some dart tests will be launched
+* Run `bin/serial_port.dart compile`, cc files will be compiled, and some dart tests will be launched
 
 Output
 
 ```
-[SerialPort]> make
-rm -rf lib/src/libserial_port*.*
-dart bin/serial_port.dart compile
+[serial_port]> bin/serial_port.dart compile
 Building project "/Users/nicolasfrancois/Documents/dart-bots/serial_port/lib/src/serial_port.yaml"
 Building complete successfully
-dart test/test_serial_port.dart
-unittest-suite-wait-for-done
-PASS: Util Convert bytes to string
-PASS: Serial port Detect serial port
-PASS: Serial port Open
-PASS: Serial port Close
-PASS: Serial port Write String
-PASS: Serial port Write bytes
-PASS: Serial port Read bytes
-PASS: Serial port Defaut baudrate 9600
-PASS: Serial port Fail with unkwnon portname
-PASS: Serial port Fail with unkwnon baudrate
-PASS: Serial port Fail when open twice
-PASS: Serial port Fail when close and not open
-PASS: Serial port Fail when writeString and not open
-PASS: Serial port Fail when write and not open
-
-All 14 tests passed.
-unittest-suite-success
 ```
 
 ## How use it ?
