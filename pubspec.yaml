@@ -1,10 +1,10 @@
 name: serial_port
-version: 0.2.2+1
+version: 0.2.3-dev
 description: Dart extension library to communicate on serial port.
 author: Nicolas Francois  <nicolas.franc@gmail.com>
 homepage: https://github.com/nfrancois/serial_port
 environnment:
-  sdk: '>=1.8.0 <2.0.0'
+  sdk: '>=1.9.0 <2.0.0'
 dependencies:
   ccompile: ">=0.2.4 <0.3.0"
 dev_dependencies:
