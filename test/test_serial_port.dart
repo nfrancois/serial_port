@@ -71,7 +71,7 @@ void main() {
       var serial =  new SerialPort(portName);
       serial.open().then((_) => serial.writeString("Hello"))
                    .then(expectAsync((success) {
-                      expect(success, isNull);
+                      expect(success, isTrue);
                       serial.close();
                    }));
     });

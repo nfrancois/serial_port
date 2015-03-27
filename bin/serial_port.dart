@@ -25,19 +25,17 @@ import 'package:serial_port/compiler.dart' deferred as compiler;
 /// Command list tools for serial port api
 /// serial_port list
 /// serial_port compile
-void main(List<String> args){
+void main(List<String> args) async {
   if(args.length != 1){
     invalidCommand();
   }
   final command = args[0];
   if(command=="compile"){
-    compiler.loadLibrary().then((_) {
-      compiler.compile();
-    });
+    await compiler.loadLibrary();
+    compiler.compile();
   } else if(command=="list") {
-    cli.loadLibrary().then((_) {
-      cli.list();
-    });
+    await cli.loadLibrary();
+    cli.list();
   } else {
     invalidCommand();
   }

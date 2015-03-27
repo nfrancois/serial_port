@@ -26,8 +26,6 @@ class SerialPort {
   static const int _WRITE_METHOD = 4;
   static const int _WRITE_BYTE_METHOD = 5;
 
-  static const int _EOL = 10;
-
   final String portName;
   final int baudrate;
   final int databits;
@@ -39,15 +37,11 @@ class SerialPort {
   SerialPort(this.portName, {this.baudrate : 9600, this.databits: 8});
 
   /// List all available port names
-  static Future<List<String>> get availablePortNames {
-    final Completer<List<String>> completer = new Completer();
-    _systemPortNames.then((List<String> portNames) {
-       final Iterable<Future<_PortNameAvailability>> areAvailable = portNames.map(_isAvailablePortName);
-       Future.wait(areAvailable).then((availability){
-         completer.complete(availability.where((p) => p.isAvailable).map((p) => p.portName).toList());
-       });
-    });
-    return completer.future;
+  static Future<List<String>> get availablePortNames async {
+    final portNames = await _systemPortNames;
+    final Iterable<Future<_PortNameAvailability>> areAvailable = portNames.map(_isAvailablePortName);
+    final availability = await Future.wait(areAvailable);
+    return availability.where((p) => p.isAvailable).map((p) => p.portName).toList();
   }
 
   /// List of potential portName depending for OS.
@@ -68,40 +62,33 @@ class SerialPort {
   }
 
   /// Ask to system if port name is avaible
-  static Future<_PortNameAvailability> _isAvailablePortName(String portName){
+  static Future<_PortNameAvailability> _isAvailablePortName(String portName) async {
     final replyPort = new ReceivePort();
-    final completer = new Completer<_PortNameAvailability>();
-    _servicePort.send([replyPort.sendPort, _TEST_PORT, portName, portName]);
-    replyPort.first.then((List result) {
-      if (result[0] == null) {
-        completer.complete(new _PortNameAvailability(portName, result[1]));
-      } else {
-        completer.complete(new _PortNameAvailability(portName, false));
-      }
-    });
-    return completer.future;
+     _servicePort.send([replyPort.sendPort, _TEST_PORT, portName, portName]);
+    final result = await replyPort.first;
+    if (result[0] == null) {
+      return new _PortNameAvailability(portName, result[1]);
+    } else {
+      return new _PortNameAvailability(portName, false);
+    }
   }
 
   /// Open the connection with serial port.
-  Future open() {
-    final completer = new Completer<bool>();
-    if(_ttyFd != -1){
-      completer.completeError("$portName is yet open");
-      return completer.future;
+  Future open() async {
+    if(isOpen){
+      throw "$portName is yet open";
     }
     final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portName, baudrate, databits]);
-    replyPort.first.then((List result) {
-      if (result[0] == null) {
-        _ttyFd = result[1];
-        _read();
-        completer.complete(true);
-      } else {
-        completer.completeError("Cannot open $portName : ${result[0]}");
-      }
-    });
-    return completer.future;
+    final result = await replyPort.first;
+    if (result[0] != null) {
+      throw "Cannot open $portName : ${result[0]}";
+    }
+    _ttyFd = result[1];
+    _read();
+    return true;
   }
+
 
   /// Getter for open connection
   bool get isOpen => _ttyFd != -1;
@@ -110,43 +97,29 @@ class SerialPort {
   int get fd => _ttyFd;
 
   /// Close the connection.
-  Future close(){
-    final completer = new Completer<bool>();
-    if(_ttyFd == -1){
-      completer.completeError("$portName is not open");
-      return completer.future;
-    }
+  Future close() async {
+    _checkOpen();
     final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _CLOSE_METHOD, _ttyFd]);
-    replyPort.first.then((List result) {
-      _onReadController.close();
-      if (result[0] == null) {
-        _ttyFd = -1;
-        completer.complete();
-      } else {
-        completer.completeError("Cannot close $portName : ${result[0]}");
-      }
-    });
-    return completer.future;
+    final result = await replyPort.first;
+    _onReadController.close();
+    if (result[0] != null) {
+      throw "Cannot close $portName : ${result[0]}";
+    }
+    _ttyFd = -1;
+    return true;
   }
 
   /// Write as a string
-  Future writeString(String data){
-    final completer = new Completer<bool>();
-    if(_ttyFd == -1){
-      completer.completeError("$portName is not open");
-      return completer.future;
-    }
+  Future writeString(String data) async {
+    _checkOpen();
     final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_METHOD, _ttyFd, data]);
-    replyPort.first.then((result) {
-      if (result[0] == null) {
-        completer.complete();
-      } else {
-        completer.completeError("Cannot write in $portName : ${result[0]}");
-      }
-    });
-    return completer.future;
+    final result = await replyPort.first;
+    if (result[0] != null) {
+      throw "Cannot write in $portName : ${result[0]}";
+    }
+    return true;
   }
 
   /// Write bytes
@@ -155,26 +128,25 @@ class SerialPort {
     return Future.wait(writes, eagerError: true).then((_) => true);
   }
 
-  Future _writeOneByte(int byte){
-    final completer = new Completer<bool>();
-    if(_ttyFd == -1){
-      completer.completeError("$portName is not open");
-      return completer.future;
-    }
+  Future _writeOneByte(int byte) async {
+    _checkOpen();
     final replyPort = new ReceivePort();
     _servicePort.send([replyPort.sendPort, _WRITE_BYTE_METHOD, _ttyFd, byte]);
-    replyPort.first.then((result) {
-      if (result[0] == null) {
-        completer.complete();
-      } else {
-        completer.completeError("Cannot write in $portName : ${result[0]}");
-      }
-    });
-    return completer.future;
+    final result = await replyPort.first;
+    if (result[0] != null) {
+      throw "Cannot write in $portName : ${result[0]}";
+    }
+    return true;
   }
 
   /// Read data send from the serial port
   Stream<List<int>> get onRead => _onReadController.stream;
+
+  _checkOpen() {
+    if (!isOpen) {
+      throw "$portName is not open";
+    }
+  }
 
   void _read(){
     if(isOpen){
