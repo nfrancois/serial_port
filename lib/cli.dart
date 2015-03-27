@@ -18,5 +18,5 @@ import 'package:serial_port/serial_port.dart';
 
 /// List serial port
 void list() {
-   SerialPort.avaiblePortNames.then((List<String> results) => print(results.join("\n")));
+   SerialPort.availablePortNames.then((List<String> results) => print(results.join("\n")));
 }
