@@ -1,3 +1,7 @@
+#### 0.2.3
+  * Fix for SDK 1.9.1
+  * Use async/await
+
 #### 0.2.2
   * Rewrite tests with `expectAsync` and remove mock files from 0.2.1
   * Fix naming typo
