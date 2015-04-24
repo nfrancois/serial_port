@@ -11,3 +11,4 @@ pubspec.lock
 .idea
 *.iml
 .pub
+.c9
