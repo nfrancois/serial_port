@@ -1,4 +1,4 @@
-// Copyright (c) 2014, Nicolas François
+// Copyright (c) 2014-2015, Nicolas François
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@
   current[1].value._asType = (_value);
 
 #define SET_RESULT_INT(_value)                      \
-  SET_RESULT(Dart_CObject_kInt32, as_int32, _value);
+  SET_RESULT(Dart_CObject_kInt64, as_int64, _value);
 
 
 #define SET_RESULT_BOOL(_value)                     \
@@ -61,7 +61,7 @@
 
 // TODO check type
 #define GET_INT_ARG(_position)                                         \
-  argv[_position]->value.as_int32;                                     \
+  argv[_position]->value.as_int64;                                     \
 
 // TODO check type
 #define GET_STRING_ARG(_position)                                      \
@@ -73,12 +73,12 @@
   RETURN_DART_RESULT;
 
 
-#define DISPATCH_METHOD(lib_name)                                                     \
+#define DART_EXT_DISPATCH_METHOD()                                                     \
 void wrap_dispatch_methods(Dart_Port send_port_id, Dart_CObject* message){            \
   Dart_Port reply_port_id = message->value.as_array.values[0]->value.as_send_port.id;     \
   int argc = message->value.as_array.length - 1;                                       \
   Dart_CObject** argv = message->value.as_array.values + 1;                            \
-  int method_code = (int) argv[0]->value.as_int32;                                     \
+  int method_code = (int) argv[0]->value.as_int64;                                     \
   argv++;                                                                              \
   argc--;
 
@@ -86,7 +86,7 @@ void wrap_dispatch_methods(Dart_Port send_port_id, Dart_CObject* message){      
   switch(method_code)
 
 
-#define DECLARE_LIB(lib_name, service_port_name)                                       \
+#define DART_EXT_DECLARE_LIB(lib_name, service_port_name)                                       \
 DART_EXPORT Dart_Handle lib_name##_Init(Dart_Handle parent_library) {                  \
   if (Dart_IsError(parent_library)) { return parent_library; }                         \
   Dart_Handle result_code = Dart_SetNativeResolver(parent_library, ResolveName, NULL);       \
