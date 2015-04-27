@@ -2,11 +2,11 @@
 
 [![pub package](http://img.shields.io/pub/v/serial_port.svg)](https://pub.dartlang.org/packages/serial_port)
 [![Build Status](https://drone.io/github.com/nfrancois/serial_port/status.png)](https://drone.io/github.com/nfrancois/serial_port/latest)
+[![Build status](https://ci.appveyor.com/api/projects/status/btsc9dnff8445ff2?svg=true)](https://ci.appveyor.com/project/nfrancois/serial-port)
 [![Coverage Status](https://img.shields.io/coveralls/nfrancois/serial_port.svg)](https://coveralls.io/r/nfrancois/serial_port)
 
 
 SerialPort is a Dart Api to provide access read and write access to serial port.
-Sorry, Windows is not (yet) supported.
 
 Inspiration come from [node-serialport](https://github.com/voodootikigod/node-serialport).
 

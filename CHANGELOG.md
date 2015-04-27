@@ -1,6 +1,7 @@
 #### 0.2.4
   * Update dev dependencies
   * Use test package instead of unittest
+  * Windows support
 
 #### 0.2.3
   * Fix for SDK 1.9.1

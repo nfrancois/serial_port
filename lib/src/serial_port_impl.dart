@@ -45,19 +45,19 @@ class SerialPort {
 
   /// List of potential portName depending for OS.
   static Future<List<String>> get _systemPortNames {
-    var wildCard;
-    if(Platform.isMacOS) {
-      wildCard = "/dev/*.*";
-    } else if(Platform.isLinux){
-      wildCard = "/dev/ttyS*";
+    if(Platform.isLinux || Platform.isMacOS) {
+      final wildCard = Platform.isLinux ? "/dev/ttyS*": "/dev/*.*";
+      return Process.run('/bin/sh', ['-c', 'ls $wildCard'])
+                    .then((ProcessResult results) => results.stdout
+                    .split('\n')
+                    .where((String name) => name.isNotEmpty)
+                    .toList());
+    } else if(Platform.isWindows){
+      final indexes = new List<int>.generate(9, (i) => i+1);
+      return new Future.value(indexes.map((i) => "COM$i"));
     } else {
       throw new UnsupportedError("Cannot find serial port for this OS");
     }
-    return Process.run('/bin/sh', ['-c', 'ls $wildCard'])
-                  .then((ProcessResult results) => results.stdout
-                                                          .split('\n')
-                                                          .where((String name) => name.isNotEmpty)
-                                                          .toList());
   }
 
   /// Ask to system if a port name is available
