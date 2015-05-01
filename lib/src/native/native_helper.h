@@ -39,10 +39,8 @@
 #define DECLARE_DART_NATIVE_METHOD(method_name)                    \
   void method_name(Dart_Port reply_port_id, Dart_CObject** argv)   \
 
-
 #define CALL_DART_NATIVE_METHOD(method_name)        \
   method_name(reply_port_id, argv);
-
 
 #define SET_ERROR(_str)                             \
   current[0].type = Dart_CObject_kString;           \
@@ -55,15 +53,18 @@
 #define SET_RESULT_INT(_value)                      \
   SET_RESULT(Dart_CObject_kInt64, as_int64, _value);
 
+#define SET_INT_ARRAY_RESULT(_data, _length)                     \
+    current[1].type = Dart_CObject_kTypedData;                          \
+    current[1].value.as_typed_data.type = Dart_TypedData_kUint8;         \
+    current[1].value.as_typed_data.values = _data;                        \
+    current[1].value.as_typed_data.length = bytes_read;                  \
 
 #define SET_RESULT_BOOL(_value)                     \
   SET_RESULT(Dart_CObject_kBool, as_bool, _value);
 
-// TODO check type
 #define GET_INT_ARG(_position)                                         \
   argv[_position]->value.as_int64;                                     \
 
-// TODO check type
 #define GET_STRING_ARG(_position)                                      \
   argv[_position]->value.as_string;
 
@@ -71,7 +72,6 @@
   DECLARE_DART_RESULT         \
   SET_ERROR("Unknow method"); \
   RETURN_DART_RESULT;
-
 
 #define DART_EXT_DISPATCH_METHOD()                                                     \
 void wrap_dispatch_methods(Dart_Port send_port_id, Dart_CObject* message){            \
@@ -84,7 +84,6 @@ void wrap_dispatch_methods(Dart_Port send_port_id, Dart_CObject* message){      
 
 #define SWITCH_METHOD_CODE                                                             \
   switch(method_code)
-
 
 #define DART_EXT_DECLARE_LIB(lib_name, service_port_name)                                       \
 DART_EXPORT Dart_Handle lib_name##_Init(Dart_Handle parent_library) {                  \

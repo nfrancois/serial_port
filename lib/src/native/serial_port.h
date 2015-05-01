@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "native_helper.h"
-#include "include/dart_api.h"
-#include "include/dart_native_api.h"
+int selectBaudrate(int baudrate_speed);
 
-DECLARE_DART_NATIVE_METHOD(native_test_port);
+int selectDataBits(int dataBits);
 
-DECLARE_DART_NATIVE_METHOD(native_open);
+bool testSerialPort(const char* port_name);
 
-DECLARE_DART_NATIVE_METHOD(native_close);
+int openSerialPort(const char* port_name, int baudrate, int databits);
 
-DECLARE_DART_NATIVE_METHOD(native_read);
+bool closeSerialPort(int tty_fd);
 
-DECLARE_DART_NATIVE_METHOD(native_write);
+int readFromSerialPort(int tty_fd, uint8_t* data, int buffer_size);
 
-DECLARE_DART_NATIVE_METHOD(native_write_byte);
+int writeToSerialPort(int tty_fd, const char* data);
+
+int writeToSerialPort(int tty_fd, uint8_t byte);

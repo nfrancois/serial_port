@@ -21,7 +21,6 @@
 #include <termios.h>
 #include "include/dart_api.h"
 #include "include/dart_native_api.h"
-#include "native_helper.h"
 
 int selectBaudrate(int baudrate_speed){
   switch(baudrate_speed){
@@ -106,146 +105,54 @@ int selectDataBits(int dataBits) {
   }
 }
 
-DECLARE_DART_NATIVE_METHOD(native_test_port){
-  DECLARE_DART_RESULT;
-  const char* portname = GET_STRING_ARG(0);
-
-  bool valid = false;
-  int tty_fd = open(portname, O_RDONLY|O_NONBLOCK);
-
+bool testSerialPort(const char* port_name){
+  int tty_fd = open(port_name, O_RDWR | O_NONBLOCK);
   if (tty_fd>0){
-    valid = true;
   	close(tty_fd);
+  	return true;
   }
-  SET_RESULT_BOOL(valid);
-
-  RETURN_DART_RESULT;
-
+  return false;
 }
 
-DECLARE_DART_NATIVE_METHOD(native_open){
-  DECLARE_DART_RESULT;
-  // TODO : macro validation nbr arg
-  // TODO : get args macro
-  const char* portname = GET_STRING_ARG(0);
-  int64_t baudrate_speed = GET_INT_ARG(1);
-  int64_t databits_nb = GET_INT_ARG(2);
-
-  int baudrate = selectBaudrate(baudrate_speed);
-  if(baudrate == -1){
-     SET_ERROR("Invalid baudrate");
-     RETURN_DART_RESULT;
+int openSerialPort(const char* port_name, int baudrate, int databits){
+  int tty_fd = open(port_name, O_RDWR | O_NOCTTY | O_NONBLOCK);
+  if(tty_fd > 0){
+    struct termios tio;
+    memset(&tio, 0, sizeof(tio));
+    tio.c_iflag=0;
+    tio.c_oflag= IGNPAR;
+    tio.c_cflag= databits | CREAD | CLOCAL | HUPCL;
+    tio.c_lflag=0;
+    tio.c_cc[VMIN]=1;
+    tio.c_cc[VTIME]=0;
+    cfsetospeed(&tio, baudrate);
+    cfsetispeed(&tio, baudrate);
+    tcflush(tty_fd, TCIFLUSH);
+    tcsetattr(tty_fd, TCSANOW, &tio);
   }
-
-  int databits = selectDataBits(databits_nb);
-  if(databits == -1) {
-     SET_ERROR("Invalid databits");
-     RETURN_DART_RESULT;
-  }
-
-  int tty_fd = open(portname, O_RDWR | O_NOCTTY | O_NONBLOCK);
-
-  if(tty_fd < 0){
-    // TODO errno
-    SET_ERROR("Invalid access");
-  }
-  struct termios tio;
-  memset(&tio, 0, sizeof(tio));
-  tio.c_iflag=0;
-  tio.c_oflag= IGNPAR;
-  tio.c_cflag= databits | CREAD | CLOCAL | HUPCL;
-  tio.c_lflag=0;
-  tio.c_cc[VMIN]=1;
-  tio.c_cc[VTIME]=0;
-  cfsetospeed(&tio, baudrate);
-  cfsetispeed(&tio, baudrate);
-  tcflush(tty_fd, TCIFLUSH);
-  tcsetattr(tty_fd, TCSANOW, &tio);
-  SET_RESULT_INT(tty_fd);
-
-  RETURN_DART_RESULT;
+  return tty_fd;
 }
 
-DECLARE_DART_NATIVE_METHOD(native_close){
-  DECLARE_DART_RESULT;
-  int64_t tty_fd = GET_INT_ARG(0);
-
+bool closeSerialPort(int tty_fd){
   int value = close(tty_fd);
-  if(value <0){
-    // TODO errno
-    SET_ERROR("Impossible to close");
-    RETURN_DART_RESULT;
-  }
-  SET_RESULT_BOOL(true);
-
-  RETURN_DART_RESULT;
+  return value >= 0;
 }
 
-DECLARE_DART_NATIVE_METHOD(native_write){
-  DECLARE_DART_RESULT;
-
-  int64_t tty_fd = GET_INT_ARG(0);
-
-  // TODO int[]
-  const char* data = GET_STRING_ARG(1);
-
-  int value = write(tty_fd, data, strlen(data));
-  if(value <0){
-    // TODO errno
-    SET_ERROR("Impossible to close");
-    RETURN_DART_RESULT;
-  }
-  SET_RESULT_INT(value);
-
-  RETURN_DART_RESULT;
+int writeToSerialPort(int tty_fd, const char* data){
+  return write(tty_fd, data, strlen(data));
 }
 
-DECLARE_DART_NATIVE_METHOD(native_write_byte){
-  DECLARE_DART_RESULT;
-  int64_t tty_fd = GET_INT_ARG(0);
-  int8_t byte = GET_INT_ARG(1);
-
-  int value = write(tty_fd, &byte, sizeof(int8_t));
-  if(value <0){
-    // TODO errno
-    SET_ERROR("Impossible to close");
-    RETURN_DART_RESULT;
-  }
-  SET_RESULT_INT(value);
-
-  RETURN_DART_RESULT;
+int writeToSerialPort(int tty_fd, uint8_t byte){
+  return write(tty_fd, &byte, sizeof(uint8_t));
 }
 
-DECLARE_DART_NATIVE_METHOD(native_read){
-  DECLARE_DART_RESULT;
-
-  int64_t tty_fd = GET_INT_ARG(0);
-
-  int buffer_size = (int) GET_INT_ARG(1);
-
-  uint8_t *buffer, *data;
-  int bytes_read;
-  //int8_t buffer[buffer_size];
+int readFromSerialPort(int tty_fd, uint8_t *data, int buffer_size){
   // TODO when concurrency (wait for read)
+  //int8_t buffer[buffer_size];
   //fd_set readfs;
   //FD_ZERO(&readfs);
   //FD_SET(tty_fd, &readfs);
   //select(tty_fd+1, &readfs, NULL, NULL, NULL);
-  buffer = reinterpret_cast<uint8_t *>(malloc(buffer_size * sizeof(uint8_t)));
-  bytes_read = read(static_cast<int>(tty_fd), buffer, static_cast<int>(buffer_size));
-
-  //bytes_read =  read(tty_fd, &buffer, sizeof(buffer));
-  if(bytes_read > 0){
-    // TODO SET_INT_ARRAY_RESULT;
-    data = reinterpret_cast<uint8_t *>(malloc(bytes_read * sizeof(uint8_t)));
-    memcpy(data, buffer, bytes_read);
-    free(buffer);
-
-    current[1].type = Dart_CObject_kTypedData;
-    current[1].value.as_typed_data.type = Dart_TypedData_kUint8;
-    current[1].value.as_typed_data.values = data;
-    current[1].value.as_typed_data.length = bytes_read;
-
-  }
-  RETURN_DART_RESULT;
+  //data = reinterpret_cast<uint8_t *>(malloc(buffer_size * sizeof(uint8_t)));
+  return read(static_cast<int>(tty_fd), data, static_cast<int>(buffer_size));
 }
