@@ -50,6 +50,26 @@ void main() {
       expect(names, isNotNull);
     });
 
+    test('Check port name is available', () async {
+      // When
+      PortNameAvailability availability = await SerialPort.isAvailablePortName(portName);
+
+      // Then
+      expect(availability, isNotNull);
+      expect(availability.portName, portName);
+      expect(availability.isAvailable, isTrue);
+    });
+
+    test('Check port name is not available', () async {
+      // When
+      PortNameAvailability availability = await SerialPort.isAvailablePortName("notExists");
+
+      // Then
+      expect(availability, isNotNull);
+      expect(availability.portName, "notExists");
+      expect(availability.isAvailable, isFalse);
+    });
+
     test('Open', () async {
       // Given
       var serial =  new SerialPort(portName, baudrate: 9600);

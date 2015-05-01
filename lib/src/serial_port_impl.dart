@@ -18,7 +18,6 @@ part of serial_port;
 
 class SerialPort {
 
-  // TODO wait for enum
   static const int _TEST_PORT = 0;
   static const int _OPEN_METHOD = 1;
   static const int _CLOSE_METHOD = 2;
@@ -39,7 +38,7 @@ class SerialPort {
   /// List all available port names
   static Future<List<String>> get availablePortNames async {
     final portNames = await _systemPortNames;
-    final Iterable<Future<_PortNameAvailability>> areAvailable = portNames.map(_isAvailablePortName);
+    final Iterable<Future<PortNameAvailability>> areAvailable = portNames.map(isAvailablePortName);
     final availability = await Future.wait(areAvailable);
     return availability.where((p) => p.isAvailable).map((p) => p.portName).toList();
   }
@@ -61,15 +60,15 @@ class SerialPort {
                                                           .toList());
   }
 
-  /// Ask to system if port name is avaible
-  static Future<_PortNameAvailability> _isAvailablePortName(String portName) async {
+  /// Ask to system if a port name is available
+  static Future<PortNameAvailability> isAvailablePortName(String portName) async {
     final replyPort = new ReceivePort();
      _servicePort.send([replyPort.sendPort, _TEST_PORT, portName, portName]);
     final result = await replyPort.first;
     if (result[0] == null) {
-      return new _PortNameAvailability(portName, result[1]);
+      return new PortNameAvailability(portName, result[1]);
     } else {
-      return new _PortNameAvailability(portName, false);
+      return new PortNameAvailability(portName, false);
     }
   }
 
@@ -177,10 +176,10 @@ class SerialPort {
 
 }
 
-/// Wrap a portname and it avaible result;
-class _PortNameAvailability {
+/// Wrap a port name and it available result;
+class PortNameAvailability {
   final String portName;
   final bool isAvailable;
 
-  _PortNameAvailability(this.portName, this.isAvailable);
+  PortNameAvailability(this.portName, this.isAvailable);
 }
