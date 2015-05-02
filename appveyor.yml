@@ -18,11 +18,14 @@ install:
   - set PATH=%PATH%;%DART_SDK%\bin
   - set PATH=%PATH%;%APPDATA%\Pub\Cache\bin
   - pub get
-  - dart bin/serial_port.dart compile
-  
+
 clone_depth: 1
 
-build: off
+build_script:
+  - dart bin/serial_port.dart compile
 
 test_script:
   - dart test/test_serial_port.dart
+
+artifacts:
+  - path: lib/src/serial_port.dll
