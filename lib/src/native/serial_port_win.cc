@@ -16,7 +16,6 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <windows.h>
-#include <stdint.h>
 #include "serial_port.h"
 
 int selectBaudrate(int baudrate_speed){
