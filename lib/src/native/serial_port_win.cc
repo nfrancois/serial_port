@@ -43,14 +43,14 @@ bool testSerialPort(const char* port_name){
 }
 
 int openSerialPort(const char* port_name, int baudrate, int databits){
-  HANDLE handlePort = CreateFile(port_name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
+  HANDLE handlePort = CreateFile(port_name, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
   int tty_fd = _open_osfhandle(reinterpret_cast<intptr_t>(handlePort), _O_TEXT);
   if(tty_fd > 0){
     DCB config;
     config.DCBlength = sizeof(config);
-    GetCommState(handlePort, &config);
     config.BaudRate = baudrate;
     config.ByteSize = databits;
+    SetCommState(handlePort, &config);
     /*
     config.StopBits = ONESTOPBIT;
     config.Parity = PARITY_NONE;
