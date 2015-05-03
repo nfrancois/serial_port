@@ -51,7 +51,7 @@
   current[1].value._asType = (_value);
 
 #define SET_RESULT_INT(_value)                      \
-  SET_RESULT(Dart_CObject_kInt64, as_int64, _value);
+  SET_RESULT(Dart_CObject_kInt32, as_int32, _value);
 
 #define SET_INT_ARRAY_RESULT(_data, _length)                     \
     current[1].type = Dart_CObject_kTypedData;                          \
@@ -63,7 +63,7 @@
   SET_RESULT(Dart_CObject_kBool, as_bool, _value);
 
 #define GET_INT_ARG(_position)                                         \
-  argv[_position]->value.as_int64;                                     \
+  argv[_position]->value.as_int32;                                     \
 
 #define GET_STRING_ARG(_position)                                      \
   argv[_position]->value.as_string;
@@ -78,7 +78,7 @@ void wrap_dispatch_methods(Dart_Port send_port_id, Dart_CObject* message){      
   Dart_Port reply_port_id = message->value.as_array.values[0]->value.as_send_port.id;     \
   int argc = message->value.as_array.length - 1;                                       \
   Dart_CObject** argv = message->value.as_array.values + 1;                            \
-  int method_code = (int) argv[0]->value.as_int64;                                     \
+  int method_code = (int) argv[0]->value.as_int32;                                     \
   argv++;                                                                              \
   argc--;
 

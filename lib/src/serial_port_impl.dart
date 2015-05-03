@@ -14,7 +14,7 @@
 
 part of serial_port;
 
-// TODO STOPBITS,PARITY, FLOWCONTROLS
+// TODO FLOWCONTROLS
 
 class SerialPort {
 
@@ -28,12 +28,14 @@ class SerialPort {
   final String portName;
   final int baudrate;
   final int databits;
+  final Parity parity;
+  final StopBits stopBits;
 
   final StreamController<List<int>> _onReadController = new StreamController<List<int>>();
 
   int _ttyFd = -1;
 
-  SerialPort(this.portName, {this.baudrate : 9600, this.databits: 8});
+  SerialPort(this.portName, {this.baudrate : 9600, this.databits: 8, this.parity: Parity.NONE, this.stopBits : StopBits.ONE});
 
   /// List all available port names
   static Future<List<String>> get availablePortNames async {
@@ -78,7 +80,7 @@ class SerialPort {
       throw "$portName is yet open";
     }
     final replyPort = new ReceivePort();
-    _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portName, baudrate, databits]);
+    _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portName, baudrate, databits, _parityCodes[parity], _stopBitsCodes[stopBits]]);
     final result = await replyPort.first;
     if (result[0] != null) {
       throw "Cannot open $portName : ${result[0]}";
@@ -183,3 +185,11 @@ class PortNameAvailability {
 
   PortNameAvailability(this.portName, this.isAvailable);
 }
+
+/// Type of stop bits
+enum StopBits { ONE, TWO /*ONE5STOPBITS*/ }
+/// Type of parity
+enum Parity {NONE, EVEN, ODD}
+
+final _stopBitsCodes = {StopBits.ONE:0, StopBits.TWO:3};
+final _parityCodes = {Parity.NONE:0, Parity.ODD:1, Parity.EVEN:2};

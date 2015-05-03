@@ -91,4 +91,4 @@ main(){
 
 * Have a better implementation for writing bytes.
 * Wait for `TODO(turnidge): Currently handle_concurrently is ignored`from Dart VM.
-* Support serial port communication parameter like (parity, stopbits, FLOWCONTROLS, ...).
+* Support serial port communication parameter like (FLOWCONTROLS, ...).

@@ -16,8 +16,8 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <windows.h>
-#include "include/dart_api.h"
-#include "include/dart_native_api.h"
+#include <stdint.h>
+#include "serial_port.h"
 
 int selectBaudrate(int baudrate_speed){
   if(baudrate_speed<0){
@@ -27,36 +27,81 @@ int selectBaudrate(int baudrate_speed){
 }
 
 int selectDataBits(int databits_nb) {
-  if(databits_nb<5 || databits_nb>8){
-     return -1;
+  switch(databits_nb){
+    case 5:
+      return DATABITS_5;
+    case 6:
+      return DATABITS_6;
+    case 7:
+      return DATABITS_7;
+    case 8:
+      return DATABITS_8;
+    default:
+      return -1;
   }
-  return databits_nb;
 }
 
 bool testSerialPort(const char* port_name){
-  HANDLE handlePort = CreateFile(port_name, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING,  0, 0);
-  if (handlePort != INVALID_HANDLE_VALUE){
-    CloseHandle(handlePort);
-    return true;
+  HANDLE handlePort = CreateFile(port_name, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING,  0, NULL);
+  if(handlePort == INVALID_HANDLE_VALUE){
+     return false;
   }
-  return false;
+  CloseHandle(handlePort);
+  return true;
 }
 
-int openSerialPort(const char* port_name, int baudrate, int databits){
+int convertParity(parity_t parity){
+    // MARKPARITY, SPACEPARITY not supported
+    switch(parity){
+        default:
+        case NONE:
+            return NOPARITY;
+         case ODD:
+            return ODDPARITY;
+         case EVEN:
+            return EVENPARITY;
+    }
+}
+
+int convertStopBits(stopbits_t stopbits){
+    switch(stopbits){
+        default:
+        case ONE:
+            return ONESTOPBIT;
+         case TWO:
+            return TWOSTOPBITS;
+            /*
+         case TWOSTOPBITS:
+            return TWOSTOPBITS;
+            */
+    }
+}
+
+int openSerialPort(const char* port_name, int baudrate, int databits, parity_t parity, stopbits_t stopbits){
   HANDLE handlePort = CreateFile(port_name, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
   int tty_fd = _open_osfhandle(reinterpret_cast<intptr_t>(handlePort), _O_TEXT);
   if(tty_fd > 0){
-    DCB config;
+    DCB config = {0};
     config.DCBlength = sizeof(config);
+    config.fBinary = true;
     config.BaudRate = baudrate;
     config.ByteSize = databits;
-    SetCommState(handlePort, &config);
-    /*
-    config.StopBits = ONESTOPBIT;
-    config.Parity = PARITY_NONE;
+    config.Parity = convertParity(parity);
+    config.StopBits = convertStopBits(stopbits);
     config.fDtrControl = 0;
     config.fRtsControl = 0;
-    */
+    SetCommState(handlePort, &config);
+
+    COMMTIMEOUTS commTimeouts = {0};
+    commTimeouts.ReadIntervalTimeout = 1;
+    commTimeouts.ReadTotalTimeoutMultiplier  = 0;
+    commTimeouts.ReadTotalTimeoutConstant    = 1000;
+    commTimeouts.WriteTotalTimeoutConstant   = 1000;
+    commTimeouts.WriteTotalTimeoutMultiplier = 1;
+    SetCommTimeouts(handlePort, &commTimeouts);
+
+    PurgeComm(handlePort, PURGE_RXCLEAR);
+    PurgeComm(handlePort, PURGE_TXCLEAR);
   }
   return tty_fd;
 }

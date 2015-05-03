@@ -12,13 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+typedef enum {
+  ONE = 0,
+  TWO = 1,
+  //ONE_HALF = 1,
+} stopbits_t;
+
+typedef enum {
+  NONE = 0,
+  ODD = 1,
+  EVEN = 2
+} parity_t;
+
 int selectBaudrate(int baudrate_speed);
 
 int selectDataBits(int dataBits);
 
 bool testSerialPort(const char* port_name);
 
-int openSerialPort(const char* port_name, int baudrate, int databits);
+int openSerialPort(const char* port_name, int baudrate, int databits, parity_t parity, stopbits_t stopbits);
 
 bool closeSerialPort(int tty_fd);
 

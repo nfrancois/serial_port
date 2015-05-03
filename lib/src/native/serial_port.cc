@@ -51,6 +51,8 @@ DECLARE_DART_NATIVE_METHOD(native_open){
   const char* port_name = GET_STRING_ARG(0);
   int64_t baudrate_speed = GET_INT_ARG(1);
   int64_t databits_nb = GET_INT_ARG(2);
+  int parityCode = GET_INT_ARG(3);
+  int stopbitsCode = GET_INT_ARG(4);
 
   int baudrate = selectBaudrate(baudrate_speed);
   if(baudrate == -1){
@@ -62,8 +64,10 @@ DECLARE_DART_NATIVE_METHOD(native_open){
      SET_ERROR("Invalid databits");
      RETURN_DART_RESULT;
   }
+  parity_t parity = static_cast<parity_t>(parityCode);
+  stopbits_t stopbits = static_cast<stopbits_t>(stopbitsCode);
 
-  int tty_fd = openSerialPort(port_name, baudrate, databits);
+  int tty_fd = openSerialPort(port_name, baudrate, databits, parity, stopbits);
 
   if(tty_fd < 0){
     SET_ERROR("Invalid access");

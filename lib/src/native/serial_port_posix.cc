@@ -19,8 +19,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <termios.h>
-#include "include/dart_api.h"
-#include "include/dart_native_api.h"
+#include "serial_port.h"
 
 int selectBaudrate(int baudrate_speed){
   switch(baudrate_speed){
@@ -114,14 +113,38 @@ bool testSerialPort(const char* port_name){
   return false;
 }
 
-int openSerialPort(const char* port_name, int baudrate, int databits){
+int openSerialPort(const char* port_name, int baudrate, int databits, parity_t parity, stopbits_t stopbits){
   int tty_fd = open(port_name, O_RDWR | O_NOCTTY | O_NONBLOCK);
   if(tty_fd > 0){
     struct termios tio;
     memset(&tio, 0, sizeof(tio));
     tio.c_iflag=0;
     tio.c_oflag= IGNPAR;
+    tio.c_cflag &= ~CSIZE;
+    tio.c_cflag &= ~(CRTSCTS);
+    // TODO xon, xoff, xany
     tio.c_cflag= databits | CREAD | CLOCAL | HUPCL;
+    switch(parity){
+        case NONE:
+            tio.c_cflag &= ~PARENB; // Clear parity enable
+            break;
+        case ODD:
+            tio.c_cflag |= PARENB; // Parity enable
+            tio.c_cflag |= PARODD; // Enable odd parity
+            break;
+        case EVEN:
+            tio.c_cflag |= PARENB; // Parity enable
+            tio.c_cflag &= ~PARODD; // Turn off odd parity = even
+            break;
+    }
+     switch(stopbits) {
+      case ONE:
+        tio.c_cflag &= ~CSTOPB;
+        break;
+      case TWO:
+        tio.c_cflag |= CSTOPB;
+        break;
+      }
     tio.c_lflag=0;
     tio.c_cc[VMIN]=1;
     tio.c_cc[VTIME]=0;

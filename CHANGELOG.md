@@ -2,6 +2,7 @@
   * Update dev dependencies
   * Use test package instead of unittest
   * Windows support
+  * Basic support for parity and stopbits
 
 #### 0.2.3
   * Fix for SDK 1.9.1

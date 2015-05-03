@@ -151,12 +151,15 @@ void main() {
 
     });
 
-    test('Defaut baudrate 9600', () {
+    test('Defaut values', () {
       // When
       var serial =  new SerialPort(portName);
 
       // Then
       expect(serial.baudrate, 9600);
+      expect(serial.databits, 8);
+      expect(serial.parity, Parity.NONE);
+      expect(serial.stopBits, StopBits.ONE);
     });
 
     test('Fail with unkwnon portname', (){
