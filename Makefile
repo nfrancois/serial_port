@@ -1,10 +1,5 @@
-all: clean build run_test
+all: grinder
 
-clean:
-	rm -rf lib/src/libserial_port*.*
+grinder:
+	pub run grinder:grinder make
 
-build:
-	dart bin/serial_port.dart compile
-
-run_test:
-	dart test/test_serial_port.dart

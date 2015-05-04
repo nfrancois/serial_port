@@ -29,8 +29,6 @@ void compile() {
       'start': 'Building project "$projectPath"',
       'success': 'Building complete successfully',
       'error': 'Building complete with some errors'});
-
-  exit(result);
 }
 
 int buildProject(projectPath, Map messages) {

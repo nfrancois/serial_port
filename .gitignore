@@ -12,3 +12,4 @@ pubspec.lock
 *.iml
 .pub
 .c9
+dart-cov-*.json
