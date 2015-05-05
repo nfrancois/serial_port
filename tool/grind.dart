@@ -7,7 +7,7 @@ main(args) => grind(args);
 compile() => new PubApp.local('ccompile:ccompile').run(['lib/src/serial_port.yaml']);
 
 @Task('Run tests')
-test() => new PubApp.local('test:test').run(['test/serial_port_test.dart']);
+test() => Tests.runCliTests(testFile: "serial_port_test.dart");
 
 @Task('Calculate test coverage')
 coverage(){
