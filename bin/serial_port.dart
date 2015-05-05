@@ -18,22 +18,15 @@ library serial_port.script;
 
 import 'dart:io';
 import 'package:serial_port/cli.dart' deferred as cli;
-import 'package:serial_port/compiler.dart' deferred as compiler;
-
-// TODO add a compilation checker
 
 /// Command list tools for serial port api
 /// serial_port list
-/// serial_port compile
 void main(List<String> args) async {
   if(args.length != 1){
     invalidCommand();
   }
   final command = args[0];
-  if(command=="compile"){
-    await compiler.loadLibrary();
-    compiler.compile();
-  } else if(command=="list") {
+  if(command=="list") {
     await cli.loadLibrary();
     cli.list();
   } else {
@@ -43,6 +36,6 @@ void main(List<String> args) async {
 }
 
 void invalidCommand(){
-  stderr.writeln("Invalid command\nUsage:\nserial_port list\nserial_port compile");
+  stderr.writeln("Invalid command\nUsage:\nserial_port list\n");
   exit(-1);
 }
