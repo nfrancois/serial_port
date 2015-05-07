@@ -17,7 +17,6 @@ part of serial_port;
 // TODO FLOWCONTROLS
 
 class SerialPort {
-
   static const int _TEST_PORT = 0;
   static const int _OPEN_METHOD = 1;
   static const int _CLOSE_METHOD = 2;
@@ -31,31 +30,37 @@ class SerialPort {
   final Parity parity;
   final StopBits stopBits;
 
-  final StreamController<List<int>> _onReadController = new StreamController<List<int>>();
+  final StreamController<List<int>> _onReadController =
+      new StreamController<List<int>>();
 
   int _ttyFd = -1;
 
-  SerialPort(this.portName, {this.baudrate : 9600, this.databits: 8, this.parity: Parity.NONE, this.stopBits : StopBits.ONE});
+  SerialPort(this.portName, {this.baudrate: 9600, this.databits: 8,
+      this.parity: Parity.NONE, this.stopBits: StopBits.ONE});
 
   /// List all available port names
   static Future<List<String>> get availablePortNames async {
     final portNames = await _systemPortNames;
-    final Iterable<Future<PortNameAvailability>> areAvailable = portNames.map(isAvailablePortName);
+    final Iterable<Future<PortNameAvailability>> areAvailable =
+        portNames.map(isAvailablePortName);
     final availability = await Future.wait(areAvailable);
-    return availability.where((p) => p.isAvailable).map((p) => p.portName).toList();
+    return availability
+        .where((p) => p.isAvailable)
+        .map((p) => p.portName)
+        .toList();
   }
 
   /// List of potential portName depending for OS.
   static Future<List<String>> get _systemPortNames {
-    if(Platform.isLinux || Platform.isMacOS) {
-      final wildCard = Platform.isLinux ? "/dev/ttyS*": "/dev/*.*";
-      return Process.run('/bin/sh', ['-c', 'ls $wildCard'])
-                    .then((ProcessResult results) => results.stdout
-                    .split('\n')
-                    .where((String name) => name.isNotEmpty)
-                    .toList());
-    } else if(Platform.isWindows){
-      final indexes = new List<int>.generate(9, (i) => i+1);
+    if (Platform.isLinux || Platform.isMacOS) {
+      final wildCard = Platform.isLinux ? "/dev/ttyS*" : "/dev/*.*";
+      return Process.run('/bin/sh', ['-c', 'ls $wildCard']).then(
+          (ProcessResult results) => results.stdout
+              .split('\n')
+              .where((String name) => name.isNotEmpty)
+              .toList());
+    } else if (Platform.isWindows) {
+      final indexes = new List<int>.generate(9, (i) => i + 1);
       return new Future.value(indexes.map((i) => "COM$i"));
     } else {
       throw new UnsupportedError("Cannot find serial port for this OS");
@@ -63,9 +68,10 @@ class SerialPort {
   }
 
   /// Ask to system if a port name is available
-  static Future<PortNameAvailability> isAvailablePortName(String portName) async {
+  static Future<PortNameAvailability> isAvailablePortName(
+      String portName) async {
     final replyPort = new ReceivePort();
-     _servicePort.send([replyPort.sendPort, _TEST_PORT, portName, portName]);
+    _servicePort.send([replyPort.sendPort, _TEST_PORT, portName, portName]);
     final result = await replyPort.first;
     if (result[0] == null) {
       return new PortNameAvailability(portName, result[1]);
@@ -76,11 +82,19 @@ class SerialPort {
 
   /// Open the connection with serial port.
   Future open() async {
-    if(isOpen){
+    if (isOpen) {
       throw "$portName is yet open";
     }
     final replyPort = new ReceivePort();
-    _servicePort.send([replyPort.sendPort, _OPEN_METHOD, portName, baudrate, databits, _parityCodes[parity], _stopBitsCodes[stopBits]]);
+    _servicePort.send([
+      replyPort.sendPort,
+      _OPEN_METHOD,
+      portName,
+      baudrate,
+      databits,
+      _parityCodes[parity],
+      _stopBitsCodes[stopBits]
+    ]);
     final result = await replyPort.first;
     if (result[0] != null) {
       throw "Cannot open $portName : ${result[0]}";
@@ -89,7 +103,6 @@ class SerialPort {
     _read();
     return true;
   }
-
 
   /// Getter for open connection
   bool get isOpen => _ttyFd != -1;
@@ -124,7 +137,7 @@ class SerialPort {
   }
 
   /// Write bytes
-  Future write(List<int> bytes){
+  Future write(List<int> bytes) {
     final writes = bytes.map((byte) => _writeOneByte(byte));
     return Future.wait(writes, eagerError: true).then((_) => true);
   }
@@ -149,12 +162,14 @@ class SerialPort {
     }
   }
 
-  void _read(){
-    if(isOpen){
+  void _read() {
+    if (isOpen) {
       final _readPort = new ReceivePort();
       _servicePort.send([_readPort.sendPort, _READ_METHOD, _ttyFd, 256]);
-      _readPort.first.then((List result){
-        if (result[0] == null && result[1] != null && !_onReadController.isClosed) {
+      _readPort.first.then((List result) {
+        if (result[0] == null &&
+            result[1] != null &&
+            !_onReadController.isClosed) {
           _onReadController.add(result[1]);
         }
         // Continue to read
@@ -175,7 +190,6 @@ class SerialPort {
   }
 
   static SendPort _newServicePort() native "serialPortServicePort";
-
 }
 
 /// Wrap a port name and it available result;
@@ -189,7 +203,7 @@ class PortNameAvailability {
 /// Type of stop bits
 enum StopBits { ONE, TWO /*ONE5STOPBITS*/ }
 /// Type of parity
-enum Parity {NONE, EVEN, ODD}
+enum Parity { NONE, EVEN, ODD }
 
-final _stopBitsCodes = {StopBits.ONE:0, StopBits.TWO:3};
-final _parityCodes = {Parity.NONE:0, Parity.ODD:1, Parity.EVEN:2};
+final _stopBitsCodes = {StopBits.ONE: 0, StopBits.TWO: 3};
+final _parityCodes = {Parity.NONE: 0, Parity.ODD: 1, Parity.EVEN: 2};

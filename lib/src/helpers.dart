@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 part of serial_port;
 
 /// Function that convert bytes to String
-final BYTES_TO_STRING = (List<int> data) =>  new String.fromCharCodes(data);
+final BYTES_TO_STRING = (List<int> data) => new String.fromCharCodes(data);
