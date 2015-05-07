@@ -16,7 +16,6 @@ coverage() =>
             .run(['report', '--exclude-test-files', 'test/test_serial_port.dart', r'--token $SERIAL_PORT_COVERALLS_TOKEN', '--retry 2']);
 
 
-<<<<<<< HEAD
 @Task("Analyze lib source code")
 analyse() => Analyzer.analyzeFiles(["lib/serial_port.dart", "lib/cli.dart"], fatalWarnings: true); 
 
@@ -26,3 +25,7 @@ analyse() => Analyzer.analyzeFiles(["lib/serial_port.dart", "lib/cli.dart"], fat
 make(){
   // Nothing to declare here
 }
+
+
+@Task()
+fmt() => DartFmt.dryRun("lib") 
