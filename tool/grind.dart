@@ -27,5 +27,5 @@ make(){
 }
 
 
-@Task()
-fmt() => DartFmt.dryRun("lib") 
+@Task("Run Dart Formater")
+fmt() => DartFmt.dryRun(new Directory("lib")); 
