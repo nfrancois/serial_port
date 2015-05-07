@@ -7,6 +7,6 @@ environnment:
   sdk: '>=1.9.1 <2.0.0'
 dev_dependencies:
   grinder: ">=0.7.0 <0.8.0"
-  ccompile: ">=0.2.8 <0.3.0"
+  ccompile: ">=0.2.9 <0.3.0"
   test: ">=0.12.0 <0.13.0"
   dart_coveralls: ">=0.1.11 <0.2.0"
