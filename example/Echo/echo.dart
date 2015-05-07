@@ -15,11 +15,12 @@
 import 'package:serial_port/serial_port.dart';
 import 'dart:async';
 
-main(){
+// This sample send a string to Arduino and print that the Arduino sending him.
+
+main() async {
   var arduino = new SerialPort("/dev/tty.usbmodem1421");
   arduino.onRead.map(BYTES_TO_STRING).listen(print);
-  arduino.open().then((_) {
-    print("Ctrl-c to close");
-    new Timer(new Duration(seconds: 2), () => arduino.writeString("Hello !"));
-  });
+  await arduino.open();
+  // Wait a little bit before sending data
+  new Timer(new Duration(seconds: 2), () => arduino.writeString("Hello !"));
 }

@@ -14,10 +14,11 @@
 
 import 'package:serial_port/serial_port.dart';
 
-main(){
+// This sample just send "Hello" to Arduino
+
+main() async {
   var arduino = new SerialPort("/dev/tty.usbmodem1421");
-  arduino.open().then((_) {
-    print("Ctrl-c to close");
-    arduino.onRead.map(BYTES_TO_STRING).listen(print);
-   });
+  await arduino.open();
+  print("Ctrl-c to close");
+  arduino.onRead.map(BYTES_TO_STRING).listen(print);
 }

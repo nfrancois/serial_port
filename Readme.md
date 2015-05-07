@@ -18,7 +18,8 @@ Yes, it must be compiled because it's a VM extension, depending of execution pla
 
 ### What I need ?
 
-`gcc`, `make` and `dart` must be in PATH
+* `gcc`, `make` and `dart` must be in PATH 
+* `DARK_SDK` environment_variable
 
 ### How compile it ?
 
@@ -33,28 +34,24 @@ pub get
 Output
 
 ```
-[serial_port]> bin/serial_port.dart compile
-Building project "/Users/nicolasfrancois/Documents/dart-bots/serial_port/lib/src/serial_port.yaml"
-Building complete successfully
+> pub run grinder:grinder compile
 ```
 
 ## How use it ?
 
 ### Echo
 
-
 ```Dart
 
 import 'package:serial_port/serial_port.dart';
 import 'dart:async';
 
-main(){
+main() async {
   var arduino = new SerialPort("/dev/tty.usbmodem1421");
   arduino.onRead.map(BYTES_TO_STRING).listen(print);
-  arduino.open().then((_) {
-    print("Ctrl-c to close");
-    new Timer(new Duration(seconds: 2), () => arduino.writeString("Hello !"));
-  });
+  await arduino.open();
+  // Wait a little bit before sending data
+  new Timer(new Duration(seconds: 2), () => arduino.writeString("Hello !"));
 }
 
 ```
@@ -75,13 +72,11 @@ void loop(){
 ```Dart
 
 import 'package:serial_port/serial_port.dart';
-import 'dart:async';
 
-main(){
-  SerialPort.availablePortNames.then((portNames) {
-  	print("${portNames.length} devices founded:");
-    portNames.forEach((device) => print(">$device"));
-  });
+main() async {
+  final portNames = await SerialPort.availablePortNames;
+  print("${portNames.length} devices found:");
+  portNames.forEach((device) => print(">$device"));
 }
 
 
