@@ -1,8 +1,10 @@
-#### 0.2.4
+#### 0.3.0-dev
   * Update dev dependencies
   * Use test package instead of unittest
   * Windows support
   * Basic support for parity and stopbits
+  * Provided compiled lib for Linux 64, MacOSX 64 and Windows 64
+  * Grinder as dev task tool
 
 #### 0.2.3
   * Fix for SDK 1.9.1
