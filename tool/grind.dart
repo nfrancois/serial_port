@@ -1,4 +1,6 @@
 import 'package:grinder/grinder.dart';
+import 'dart:io';
+
 
 main(args) => grind(args);
 
@@ -13,12 +15,14 @@ coverage() =>
   new PubApp.local('dart_coveralls')
             .run(['report', '--exclude-test-files', 'test/test_serial_port.dart', r'--token $SERIAL_PORT_COVERALLS_TOKEN', '--retry 2']);
 
-/*
-TODO currenty fail because ccompile exit
+
+<<<<<<< HEAD
+@Task("Analyze lib source code")
+analyse() => Analyzer.analyzeFiles(["lib/serial_port.dart", "lib/cli.dart"], fatalWarnings: true); 
+
+
 @DefaultTask('Combine tasks for continous integration')
-@Depends('compile', 'test')
+@Depends('compile', 'test', 'analyse')
 make(){
   // Nothing to declare here
 }
-*/
-

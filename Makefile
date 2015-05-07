@@ -1,8 +1,5 @@
-all: compile test
+all: grinder
 
-compile:
-	pub run grinder:grinder compile   
-
-test:
-	pub run grinder:grinder test
+grinder:
+	pub run grinder:grinder make   
 
