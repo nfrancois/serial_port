@@ -18,6 +18,8 @@ coverage() =>
 @Task("Analyze lib source code")
 analyse() => Analyzer.analyzeFiles(["lib/serial_port.dart", "lib/cli.dart"], fatalWarnings: true);
 
+@Task('Generate dartdoc')
+doc() => new PubApp.local('dartdoc');
 
 @DefaultTask('Combine tasks for continous integration')
 @Depends('compile', 'test', 'analyse')
