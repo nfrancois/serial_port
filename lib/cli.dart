@@ -15,9 +15,15 @@
 library serial_port.cli;
 
 import 'package:serial_port/serial_port.dart';
+import 'dart:io';
+
 
 /// List serial port
 list() async {
   List<String> results = await SerialPort.availablePortNames;
-  print(results.join("\n"));
+  if(results.isEmpty){
+    stdout.writeln("No serial port available found.");
+  } else {
+    results.forEach(stdout.writeln);
+  }
 }
