@@ -25,10 +25,15 @@ class SerialPort {
   static const int _WRITE_METHOD = 4;
   static const int _WRITE_BYTE_METHOD = 5;
 
+  // Name of device on which the connection is made
   final String portName;
+  // Connexion speed
   final int baudrate;
+  // Number of data bits in each character
   final int databits;
+  // Method of detecting errors in transmission
   final Parity parity;
+  // Bits sent at the end of every character allow the receiving signal hardware to detect the end of a character
   final StopBits stopBits;
 
   final StreamController<List<int>> _onReadController = new StreamController<List<int>>();
