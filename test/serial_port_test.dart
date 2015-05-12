@@ -70,9 +70,25 @@ void main() {
       expect(availability.isAvailable, isFalse);
     });
 
-    test('Open', () async {
+    test('Defaut open', () async {
       // Given
-      var serial =  new SerialPort(portName, baudrate: 9600);
+      var serial =  new SerialPort(portName);
+
+      // When
+      await serial.open();
+
+      // Then
+      expect(serial.fd!=-1, true);
+      expect(serial.isOpen, true);
+
+
+      await serial.close();
+
+	  });
+	  
+	      test('Open with parameter', () async {
+      // Given
+      var serial =  new SerialPort(portName, baudrate : 9600, databits: 8, parity: Parity.NONE, stopBits : StopBits.ONE);
 
       // When
       await serial.open();
