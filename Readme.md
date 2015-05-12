@@ -6,40 +6,23 @@
 [![Coverage Status](https://img.shields.io/coveralls/nfrancois/serial_port.svg)](https://coveralls.io/r/nfrancois/serial_port)
 
 
-SerialPort is a Dart Api to provide access read and write access to serial port.
+SerialPort is a Dart Api to provide access read and write access to serial port. <br/>
+Binaries are provided for:
+ - Win 64 bits
+ - Linux 64 bits
+ - MacOS 64 bits
 
 Inspiration come from [node-serialport](https://github.com/voodootikigod/node-serialport).
-
-## Compilation
-
-### Why ?
-
-Yes, it must be compiled because it's a VM extension, depending of execution platform.
-
-### What I need ?
-
-* `gcc`, `make` and `dart` must be in PATH 
-* `DARK_SDK` environment_variable
-
-### How compile it ?
-
- * Install Dart dependencies
-
-```
-pub get
-```
-
-* Run `bin/serial_port.dart compile`, cc files will be compiled, and some dart tests will be launched
-
-Output
-
-```
-> pub run grinder:grinder compile
-```
 
 ## How use it ?
 
 ### Echo
+
+Simple program :
+- Arduino repeat all character send to it.
+- Dart send "Hello !" and print what Arduino send.
+
+Dart part:
 
 ```Dart
 
@@ -56,6 +39,8 @@ main() async {
 
 ```
 
+Arduino part:
+
 ```c
 void setup(){
   Serial.begin(9600);
@@ -67,6 +52,7 @@ void loop(){
   }
 }
 ```
+
 ### List connected serial ports
 
 ```Dart
@@ -82,7 +68,22 @@ main() async {
 
 ```
 
-# Nexts developments
+## Executable
+
+Install serial_port with as pub global executable.
+
+```
+pub global activate serial_port
+```
+
+And use it to list available serial ports.
+
+```
+serial_port list
+```
+
+
+## Nexts developments
 
 * Have a better implementation for writing bytes.
 * Wait for `TODO(turnidge): Currently handle_concurrently is ignored`from Dart VM.
