@@ -1,7 +1,7 @@
 #Serial Port
 
 [![pub package](http://img.shields.io/pub/v/serial_port.svg)](https://pub.dartlang.org/packages/serial_port)
-[![Build Status](https://drone.io/github.com/nfrancois/serial_port/status.png)](https://drone.io/github.com/nfrancois/serial_port/latest)
+[![Build Status](https://travis-ci.org/nfrancois/serial_port.svg?branch=master)](https://travis-ci.org/nfrancois/serial_port/)
 [![Build status](https://ci.appveyor.com/api/projects/status/btsc9dnff8445ff2?svg=true)](https://ci.appveyor.com/project/nfrancois/serial-port)
 [![Coverage Status](https://img.shields.io/coveralls/nfrancois/serial_port.svg)](https://coveralls.io/r/nfrancois/serial_port)
 
