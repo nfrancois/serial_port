@@ -1,4 +1,4 @@
 #!/bin/sh
 
-pub run grinder:grinder compile   
-pub run grinder:grinder test
+pub run grinder compile
+pub run grinder test

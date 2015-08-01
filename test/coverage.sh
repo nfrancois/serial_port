@@ -1,3 +1,3 @@
 #!/bin/sh
 
-pub run grinder:grinder coverage
+pub run grinder coverage

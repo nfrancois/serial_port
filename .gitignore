@@ -13,3 +13,4 @@ pubspec.lock
 .pub
 .c9
 dart-cov-*.json
+doc

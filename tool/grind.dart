@@ -8,12 +8,12 @@ main(args) => grind(args);
 compile() => new PubApp.local('ccompile:ccompile').run(['lib/src/serial_port.yaml']);
 
 @Task('Run tests')
-test() => Tests.runCliTests(testFile: "serial_port_test.dart");
+test() => new TestRunner().test(files: "test/serial_port_test.dart");
 
 @Task('Calculate test coverage')
 coverage() =>
-  new PubApp.local('dart_coveralls')
-            .run(['report', '--exclude-test-files', 'test/test_serial_port.dart', r'--token $SERIAL_PORT_COVERALLS_TOKEN', '--retry 2']);
+  new PubApp.local('dart_coveralls').run(['report', '--exclude-test-files', 'test/serial_port_test.dart',
+                                  r'--token $SERIAL_PORT_COVERALLS_TOKEN']);
 
 @Task("Analyze lib source code")
 analyse() => Analyzer.analyzeFiles(["lib/serial_port.dart", "lib/cli.dart"], fatalWarnings: true);
