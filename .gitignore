@@ -3,6 +3,7 @@
 *.so
 *.dylib
 packages
+.packages
 pubspec.lock
 *.tmp
 .DS_Store
