@@ -1,5 +1,6 @@
 #### 0.3.1:
   * Update SDK to 1.12.1 and dev dependencies
+  * Update tools librairies
 
 #### 0.3.0
   * Update dev dependencies
