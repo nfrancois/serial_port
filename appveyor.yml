@@ -13,7 +13,7 @@
 # limitations under the License.
 
 install:
-  - cinst -y dart-sdk -version 1.11.1
+  - cinst -y dart-sdk -version 1.12.1
   - set DART_SDK=C:\tools\dart-sdk
   - set PATH=%PATH%;%DART_SDK%\bin
   - set PATH=%PATH%;%APPDATA%\Pub\Cache\bin
