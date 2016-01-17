@@ -35,12 +35,18 @@ class SerialPort {
   final Parity parity;
   // Bits sent at the end of every character allow the receiving signal hardware to detect the end of a character
   final StopBits stopBits;
+  // Delay betwween to read in millis
+  final int delay;
+
 
   final StreamController<List<int>> _onReadController = new StreamController<List<int>>();
+  Duration _delay;
 
   int _ttyFd = -1;
 
-  SerialPort(this.portName, {this.baudrate : 9600, this.databits: 8, this.parity: Parity.NONE, this.stopBits : StopBits.ONE});
+  SerialPort(this.portName, {this.baudrate : 9600, this.databits: 8, this.parity: Parity.NONE, this.stopBits : StopBits.ONE, this.delay : 0}){
+    _delay = new Duration(milliseconds: delay);
+  }
 
   /// List all available port names
   static Future<List<String>> get availablePortNames async {
@@ -91,7 +97,7 @@ class SerialPort {
       throw "Cannot open $portName : ${result[0]}";
     }
     _ttyFd = result[1];
-    _read();
+    new Timer(_delay, _read);
     return true;
   }
 
