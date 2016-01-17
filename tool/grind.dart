@@ -16,7 +16,7 @@ coverage() =>
                                   r'--token $SERIAL_PORT_COVERALLS_TOKEN']);
 
 @Task("Analyze lib source code")
-analyse() => Analyzer.analyzeFiles(["lib/serial_port.dart", "lib/cli.dart"], fatalWarnings: true);
+analyse() => Analyzer.analyzeFiles(["lib/serial_port.dart"], fatalWarnings: true);
 
 @Task('Generate dartdoc')
 doc() => new PubApp.local('dartdoc');
