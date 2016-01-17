@@ -94,8 +94,8 @@ int openSerialPort(const char* port_name, int baudrate, int databits, parity_t p
     COMMTIMEOUTS commTimeouts = {0};
     commTimeouts.ReadIntervalTimeout = 1;
     commTimeouts.ReadTotalTimeoutMultiplier  = 0;
-    commTimeouts.ReadTotalTimeoutConstant    = 1000;
-    commTimeouts.WriteTotalTimeoutConstant   = 1000;
+    commTimeouts.ReadTotalTimeoutConstant    = 100;
+    commTimeouts.WriteTotalTimeoutConstant   = 100;
     commTimeouts.WriteTotalTimeoutMultiplier = 1;
     SetCommTimeouts(handlePort, &commTimeouts);
 
