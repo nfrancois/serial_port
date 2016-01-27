@@ -18,9 +18,10 @@ import 'dart:async';
 // Funny game with Arduino : Send "ping" to "Arduno", and reponse "ping" when Arduino send "pong"
 
 var arduino;
+var buffer;
 
 main() async {
-  var buffer = new StringBuffer();
+  buffer = new StringBuffer();
   arduino = new SerialPort("/dev/tty.usbmodem1421");
   arduino.onRead.map(BYTES_TO_STRING).listen(checkPong);
   await arduino.open();
@@ -40,5 +41,5 @@ void checkPong(String word){
     print(buffer.toString());
     buffer.clear();
     sendPing();
-  }  
+  }
 }
