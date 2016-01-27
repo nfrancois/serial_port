@@ -1,3 +1,8 @@
+#### 0.4.0
+  * Change default read timeout on Windows
+  * Add a delay param for serial reading
+  * Fix Ping Pong sample
+
 #### 0.3.1:
   * Update SDK to 1.12.1 and dev dependencies
   * Update tools librairies
