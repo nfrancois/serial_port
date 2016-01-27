@@ -20,7 +20,7 @@ platforms:
       output_file: 'libserial_port.so'
   macos:
     compiler:
-      arguments: ['-fPIC', '-Wall']
+      arguments: ['-fPIC', '-Wall', '-v']
       input_files:
       - 'native/serial_port_posix.cc'
     linker:
@@ -31,12 +31,12 @@ platforms:
   windows:
     compiler:
       defines: {'DART_SHARED_LIB':}
-      arguments: ['/EHsc']
+      arguments: ['/EHsc', '/VERBOSE']
       input_files:
       - 'native/serial_port_win.cc'
       - 'native/serial_port_dllmain_win.cc'
     linker:
-      arguments: ['/DLL']
+      arguments: ['/DLL', '/VERBOSE']
       input_files:
       - 'dart.lib'
       - 'serial_port_win'
